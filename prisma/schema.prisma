@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Coach {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  teamName     String    @default("")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  seasons      Season[]
+  players      Player[]
+  formations   Formation[]
+}
+
+model Season {
+  id        String   @id @default(cuid())
+  name      String
+  coachId   String
+  coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  games     Game[]
+}
+
+model Game {
+  id          String            @id @default(cuid())
+  seasonId    String
+  season      Season            @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  opponent    String
+  date        DateTime
+  weekNumber  Int
+  createdAt   DateTime          @default(now())
+  grades      Grade[]
+  snaps       GameSnap[]
+  playerStats GamePlayerStats[]
+}
+
+model Player {
+  id         String            @id @default(cuid())
+  coachId    String
+  coach      Coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  name       String
+  number     Int
+  position   String
+  height     String            @default("")
+  weight     String            @default("")
+  year       String            @default("")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  grades     Grade[]
+  snapGrades SnapGrade[]
+  gameStats  GamePlayerStats[]
+}
+
+model GameSnap {
+  id         String      @id @default(cuid())
+  gameId     String
+  game       Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  snapNumber Int
+  playName   String
+  playType   String      @default("run") // "run", "pass", "draw-screen"
+  comment    String      @default("")
+  createdAt  DateTime    @default(now())
+  grades     SnapGrade[]
+}
+
+model SnapGrade {
+  id       String   @id @default(cuid())
+  snapId   String
+  snap     GameSnap @relation(fields: [snapId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  value    Int      // 4=best (++), 3=(+-), 2=(-+), 1=worst (--)
+}
+
+model GamePlayerStats {
+  id                String @id @default(cuid())
+  gameId            String
+  game              Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerId          String
+  player            Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sacks             Int    @default(0)
+  missedAssignments Int    @default(0)
+  penalties         Int    @default(0)
+  pressures         Int    @default(0)
+  badSnaps          Int    @default(0)
+  knockdowns        Int    @default(0)
+  da                Int    @default(0)
+
+  @@unique([gameId, playerId])
+}
+
+model Formation {
+  id       String @id @default(cuid())
+  coachId  String
+  coach    Coach  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  name     String
+  category String // "run", "pass", "draw-screen"
+  plays    Play[]
+}
+
+model Play {
+  id          String     @id @default(cuid())
+  formationId String
+  formation   Formation  @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  name        String     // Concept/scheme name e.g. "Outside Zone", "Inside Zone", "Power"
+  category    String     // "run", "pass", "draw-screen"
+  down        String     @default("any") // "1st", "2nd", "3rd", "4th", "any"
+  distance    String     @default("any") // "short" (1-3), "medium" (4-6), "long" (7+), "goal-line", "any"
+  createdAt   DateTime   @default(now())
+  playCalls   PlayCall[]
+}
+
+model PlayCall {
+  id        String   @id @default(cuid())
+  playId    String
+  play      Play     @relation(fields: [playId], references: [id], onDelete: Cascade)
+  name      String   // Specific call name e.g. "Washington", "Wizards"
+  createdAt DateTime @default(now())
+  grades    Grade[]
+}
+
+model Grade {
+  id               String   @id @default(cuid())
+  playCallId       String
+  playCall         PlayCall @relation(fields: [playCallId], references: [id], onDelete: Cascade)
+  gameId           String
+  game             Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerId         String
+  player           Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  value            Int      // 1=worst, 2, 3, 4=best
+  techniqueGrade   Int      @default(4) // 1=worst, 2, 3, 4=best
+  missedAssignment Boolean  @default(false)
+  knockdown        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
