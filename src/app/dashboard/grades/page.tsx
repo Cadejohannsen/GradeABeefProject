@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Trash2, X, Star, ChevronDown } from "lucide-react";
+import { calcGradeStats, gradeColorClass, gradeBgClass } from "@/lib/grading";
 
 /* ── types ─────────────────────────────────────────── */
 interface Player {
@@ -50,6 +51,17 @@ interface Game {
   _count?: { snaps: number };
 }
 
+interface Play {
+  id: string;
+  name: string;
+  category: string;
+}
+
+const OL_POSITIONS = ["LT", "LG", "C", "RG", "RT"] as const;
+type OLPosition = typeof OL_POSITIONS[number];
+type LineupMap = Record<OLPosition, string>; // position -> playerId
+const EMPTY_LINEUP: LineupMap = { LT: "", LG: "", C: "", RG: "", RT: "" };
+
 /* ── Modal ─────────────────────────────────────────── */
 function Modal({ open, onClose, title, children }: {
   open: boolean; onClose: () => void; title: string; children: React.ReactNode;
@@ -69,30 +81,9 @@ function Modal({ open, onClose, title, children }: {
   );
 }
 
-/* ── grade helpers ─────────────────────────────────── */
-function gradeColor(v: number) {
-  switch (v) {
-    case 4: return "text-green-400";
-    case 3: return "text-yellow-400";
-    case 2: return "text-orange-400";
-    case 1: return "text-red-500";
-    default: return "text-white/30";
-  }
-}
-
-function gradeBg(v: number) {
-  switch (v) {
-    case 4: return "bg-green-500/15";
-    case 3: return "bg-yellow-500/15";
-    case 2: return "bg-orange-500/15";
-    case 1: return "bg-red-500/15";
-    default: return "";
-  }
-}
-
-// 4=++ (good job, good tech), 3=+- (good job, bad tech), 2=-+ (bad job, good tech), 1=-- (bad job, bad tech)
-function isJobPositive(v: number) { return v >= 3; }
-function isTechPositive(v: number) { return v === 4 || v === 2; }
+/* ── grade helpers (aliases for JSX convenience) ───── */
+const gradeColor = gradeColorClass;
+const gradeBg    = gradeBgClass;
 
 /* ── main page ─────────────────────────────────────── */
 export default function GradesPage() {
@@ -105,13 +96,24 @@ export default function GradesPage() {
   const [showNewGame, setShowNewGame] = useState(false);
   const [newGame, setNewGame] = useState({ opponent: "", date: "", weekNumber: 1 });
 
+  // Plays library
+  const [plays, setPlays] = useState<Play[]>([]);
+
+  // Per-game lineup & subs (persisted to localStorage)
+  const [lineup, setLineup] = useState<Record<string, LineupMap>>({});
+  const [extras, setExtras] = useState<Record<string, string[]>>({});
+
   // New snap row
   const [newPlayName, setNewPlayName] = useState("");
   const [newPlayType, setNewPlayType] = useState("run");
-  const newPlayRef = useRef<HTMLInputElement>(null);
+  const newPlayRef = useRef<HTMLSelectElement>(null);
 
   // Inline editing
   const [editingCell, setEditingCell] = useState<string | null>(null); // "snapId-playerId"
+
+  // Local stat values for controlled inputs (auto-save on change)
+  const [localStats, setLocalStats] = useState<Record<string, Record<string, number>>>({});
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const fetchPlayers = useCallback(async () => {
     const res = await fetch("/api/players");
@@ -123,17 +125,57 @@ export default function GradesPage() {
     if (res.ok) setGames(await res.json());
   }, []);
 
+  const fetchPlays = useCallback(async () => {
+    const res = await fetch("/api/plays");
+    if (res.ok) setPlays(await res.json());
+  }, []);
+
   const fetchGameData = useCallback(async (gameId: string) => {
     const res = await fetch(`/api/games/${gameId}`);
     if (res.ok) setGameData(await res.json());
   }, []);
 
-  useEffect(() => { fetchPlayers(); fetchGames(); }, [fetchPlayers, fetchGames]);
+  // Load lineup/extras from localStorage on mount
+  useEffect(() => {
+    try {
+      const l = localStorage.getItem("gab-lineup");
+      if (l) setLineup(JSON.parse(l));
+      const e = localStorage.getItem("gab-extras");
+      if (e) setExtras(JSON.parse(e));
+    } catch {}
+  }, []);
+
+  useEffect(() => { localStorage.setItem("gab-lineup", JSON.stringify(lineup)); }, [lineup]);
+  useEffect(() => { localStorage.setItem("gab-extras", JSON.stringify(extras)); }, [extras]);
+
+  useEffect(() => { fetchPlayers(); fetchGames(); fetchPlays(); }, [fetchPlayers, fetchGames, fetchPlays]);
 
   useEffect(() => {
     if (selectedGameId) fetchGameData(selectedGameId);
-    else setGameData(null);
+    else { setGameData(null); setLocalStats({}); }
   }, [selectedGameId, fetchGameData]);
+
+  // Sync localStats whenever gameData changes (e.g. after initial load)
+  useEffect(() => {
+    if (!gameData) return;
+    setLocalStats((prev) => {
+      const next = { ...prev };
+      for (const ps of gameData.playerStats) {
+        if (!next[ps.playerId]) {
+          next[ps.playerId] = {
+            sacks: ps.sacks,
+            missedAssignments: ps.missedAssignments,
+            penalties: ps.penalties,
+            pressures: ps.pressures,
+            badSnaps: ps.badSnaps,
+            knockdowns: ps.knockdowns,
+            da: ps.da,
+          };
+        }
+      }
+      return next;
+    });
+  }, [gameData]);
 
   /* ── game handlers ── */
   async function handleCreateGame(e: React.FormEvent) {
@@ -163,8 +205,8 @@ export default function GradesPage() {
       body: JSON.stringify({ playName: newPlayName.trim().toUpperCase(), playType: newPlayType }),
     });
     setNewPlayName("");
-    newPlayRef.current?.focus();
     await fetchGameData(selectedGameId);
+    newPlayRef.current?.focus();
   }
 
   async function handleDeleteSnap(snapId: string) {
@@ -206,33 +248,84 @@ export default function GradesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ playerId, [field]: value }),
     });
-    await fetchGameData(selectedGameId);
   }
 
-  /* ── summary calculations ── */
+  function handleStatInput(playerId: string, field: string, value: number) {
+    // Update local state immediately
+    setLocalStats((prev) => ({
+      ...prev,
+      [playerId]: { ...(prev[playerId] ?? {}), [field]: value },
+    }));
+    // Debounce the actual save
+    const key = `${playerId}-${field}`;
+    if (saveTimers.current[key]) clearTimeout(saveTimers.current[key]);
+    saveTimers.current[key] = setTimeout(() => {
+      handleStatChange(playerId, field, value);
+    }, 600);
+  }
+
+  /* ── summary calculations (uses shared grading algorithm) ── */
   function calcStats(playerId: string, playTypeFilter?: string) {
     if (!gameData) return { snaps: 0, jobPct: 0, techPct: 0, totalPct: 0 };
-    const snaps = playTypeFilter
+    const filteredSnaps = playTypeFilter
       ? gameData.snaps.filter((s) => s.playType === playTypeFilter)
       : gameData.snaps;
-    const grades = snaps
+    const grades = filteredSnaps
       .flatMap((s) => s.grades)
       .filter((g) => g.playerId === playerId);
-    const total = grades.length;
-    if (total === 0) return { snaps: 0, jobPct: 0, techPct: 0, totalPct: 0 };
-
-    const jobCount = grades.filter((g) => isJobPositive(g.value)).length;
-    const techCount = grades.filter((g) => isTechPositive(g.value)).length;
-    const jobPct = Math.round((jobCount / total) * 100);
-    const techPct = Math.round((techCount / total) * 100);
-    const totalPct = Math.round(((jobCount + techCount) / (total * 2)) * 100);
-
-    return { snaps: total, jobPct, techPct, totalPct };
+    const { snaps, jobPct, techPct, finalPct } = calcGradeStats(grades);
+    return { snaps, jobPct, techPct, totalPct: finalPct };
   }
 
   function getPlayerStats(playerId: string): GamePlayerStatsData | undefined {
     return gameData?.playerStats.find((s) => s.playerId === playerId);
   }
+
+  /* ── lineup helpers ── */
+  const gameLineup: LineupMap = selectedGameId ? (lineup[selectedGameId] ?? EMPTY_LINEUP) : EMPTY_LINEUP;
+  const gameExtras: string[] = selectedGameId ? (extras[selectedGameId] ?? []) : [];
+
+  function getLineupPlayer(pos: OLPosition): Player | undefined {
+    const id = gameLineup[pos];
+    return id ? players.find((p) => p.id === id) : undefined;
+  }
+
+  function setLineupByNumber(pos: OLPosition, num: number) {
+    if (!selectedGameId) return;
+    const player = players.find((p) => p.number === num);
+    setLineup((prev) => ({
+      ...prev,
+      [selectedGameId]: { ...(prev[selectedGameId] ?? EMPTY_LINEUP), [pos]: player?.id ?? "" },
+    }));
+  }
+
+  function addExtra(playerId: string) {
+    if (!selectedGameId || !playerId) return;
+    setExtras((prev) => ({
+      ...prev,
+      [selectedGameId]: Array.from(new Set([...(prev[selectedGameId] ?? []), playerId])),
+    }));
+  }
+
+  function removeExtra(playerId: string) {
+    if (!selectedGameId) return;
+    setExtras((prev) => ({
+      ...prev,
+      [selectedGameId]: (prev[selectedGameId] ?? []).filter((id) => id !== playerId),
+    }));
+  }
+
+  // Ordered list of players to show as grade columns
+  const lineupPlayerIds = new Set(Object.values(gameLineup).filter(Boolean));
+  const extraPlayerIds = new Set(gameExtras);
+  const extraPlayers = gameExtras.map((id) => players.find((p) => p.id === id)).filter(Boolean) as Player[];
+  const availableSubs = players.filter((p) => !lineupPlayerIds.has(p.id) && !extraPlayerIds.has(p.id));
+
+  // All grade columns in order: 5 positions (may be unassigned) + extra subs
+  const gradeColumns: { pos?: OLPosition; player: Player | null }[] = [
+    ...OL_POSITIONS.map((pos) => ({ pos, player: getLineupPlayer(pos) ?? null })),
+    ...extraPlayers.map((player) => ({ player })),
+  ];
 
   /* ── no players state ── */
   if (players.length === 0) {
@@ -351,19 +444,15 @@ export default function GradesPage() {
                       {statCell(total.techPct, total.snaps)}
                       {statCell(total.totalPct, total.snaps)}
                       {(["sacks", "missedAssignments", "penalties", "pressures", "badSnaps", "knockdowns", "da"] as const).map((field) => {
-                        const ps = getPlayerStats(p.id);
-                        const val = ps ? ps[field] : 0;
+                        const val = localStats[p.id]?.[field] ?? 0;
                         return (
                           <td key={field} className="text-center px-1 py-1">
                             <input
                               type="number"
                               min={0}
-                              defaultValue={val}
-                              onBlur={(e) => {
-                                const nv = parseInt(e.target.value) || 0;
-                                if (nv !== val) handleStatChange(p.id, field, nv);
-                              }}
-                              className="w-10 bg-transparent border border-white/10 rounded text-center text-xs text-white py-0.5 focus:ring-1 focus:ring-white/30 focus:outline-none"
+                              value={val}
+                              onChange={(e) => handleStatInput(p.id, field, parseInt(e.target.value) || 0)}
+                              className="w-10 bg-transparent border border-white/20 rounded text-center text-xs text-white py-0.5 focus:ring-1 focus:ring-white/30 focus:outline-none"
                             />
                           </td>
                         );
@@ -414,17 +503,56 @@ export default function GradesPage() {
           {/* Grading table */}
           <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-x-auto mb-6">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 bg-white/[0.03]">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-white/10 bg-[#0d1117]">
                   <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-10">#</th>
                   <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-16">TYPE</th>
                   <th className="text-left px-3 py-2 text-xs text-white/40 font-medium min-w-[160px]">PLAY</th>
-                  {players.map((p) => (
-                    <th key={p.id} className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[60px]">
-                      <div>{p.position}</div>
-                      <div className="text-white font-bold">#{p.number}</div>
+                  {/* Starting 5 position columns */}
+                  {OL_POSITIONS.map((pos) => {
+                    const player = getLineupPlayer(pos);
+                    return (
+                      <th key={pos} className="text-center px-2 py-1.5 text-xs font-medium min-w-[64px]">
+                        <div className="text-white/40 font-semibold tracking-wide">{pos}</div>
+                        <input
+                          type="number"
+                          min={1}
+                          max={99}
+                          value={player?.number ?? ""}
+                          onChange={(e) => setLineupByNumber(pos, parseInt(e.target.value) || 0)}
+                          placeholder="#"
+                          className="w-12 mt-0.5 bg-white/[0.08] border border-white/20 rounded text-center text-xs text-white font-bold py-0.5 focus:outline-none focus:ring-1 focus:ring-primary-400 placeholder:text-white/20"
+                        />
+                      </th>
+                    );
+                  })}
+                  {/* Extra sub columns */}
+                  {extraPlayers.map((p) => (
+                    <th key={p.id} className="text-center px-2 py-1.5 text-xs font-medium min-w-[64px]">
+                      <div className="text-purple-400 font-semibold">{p.position}</div>
+                      <div className="flex items-center justify-center gap-0.5 mt-0.5">
+                        <span className="text-white font-bold text-xs">#{p.number}</span>
+                        <button onClick={() => removeExtra(p.id)} className="text-white/20 hover:text-red-400 ml-1">
+                          <X size={10} />
+                        </button>
+                      </div>
                     </th>
                   ))}
+                  {/* Add sub button */}
+                  {availableSubs.length > 0 && (
+                    <th className="text-center px-1 py-1.5 min-w-[44px]">
+                      <select
+                        value=""
+                        onChange={(e) => addExtra(e.target.value)}
+                        className="bg-white/[0.08] border border-white/20 rounded text-xs text-white/50 focus:outline-none py-0.5 px-1 cursor-pointer"
+                      >
+                        <option value="">+ Sub</option>
+                        {availableSubs.map((p) => (
+                          <option key={p.id} value={p.id}>#{p.number} {p.name} ({p.position})</option>
+                        ))}
+                      </select>
+                    </th>
+                  )}
                   <th className="text-left px-3 py-2 text-xs text-white/40 font-medium min-w-[140px]">COMMENTS</th>
                   <th className="w-8"></th>
                 </tr>
@@ -452,21 +580,52 @@ export default function GradesPage() {
                         <option value="draw-screen">Draw</option>
                       </select>
                     </td>
-                    <td className="px-3 py-1.5 font-medium text-white text-xs uppercase">{snap.playName}</td>
-                    {players.map((p) => {
-                      const grade = snap.grades.find((g) => g.playerId === p.id);
-                      const cellKey = `${snap.id}-${p.id}`;
+                    <td className="px-2 py-1">
+                      {(() => {
+                        const opts = plays.filter((p) => p.category === snap.playType);
+                        return opts.length > 0 ? (
+                          <select
+                            value={snap.playName}
+                            onChange={async (e) => {
+                              await fetch(`/api/games/${selectedGameId}/snaps/${snap.id}`, {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ playName: e.target.value, playType: snap.playType }),
+                              });
+                              await fetchGameData(selectedGameId!);
+                            }}
+                            className="bg-transparent border border-white/10 rounded text-xs text-white font-medium uppercase focus:ring-1 focus:ring-white/30 focus:outline-none py-0.5 px-1 min-w-[120px]"
+                          >
+                            <option value="">— select —</option>
+                            {opts.map((p) => (
+                              <option key={p.id} value={p.name.toUpperCase()}>{p.name.toUpperCase()}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-xs font-medium text-white uppercase">{snap.playName}</span>
+                        );
+                      })()}
+                    </td>
+                    {gradeColumns.map(({ pos, player }, colIdx) => {
+                      if (!player) {
+                        return (
+                          <td key={pos ?? `empty-${colIdx}`} className="text-center px-1 py-1">
+                            <span className="text-white/10 text-xs">—</span>
+                          </td>
+                        );
+                      }
+                      const grade = snap.grades.find((g) => g.playerId === player.id);
+                      const cellKey = `${snap.id}-${player.id}`;
                       const isEditing = editingCell === cellKey;
-
                       return (
-                        <td key={p.id} className={`text-center px-1 py-1 ${grade ? gradeBg(grade.value) : ""}`}>
+                        <td key={player.id} className={`text-center px-1 py-1 ${grade ? gradeBg(grade.value) : ""}`}>
                           {isEditing ? (
                             <select
                               autoFocus
                               defaultValue={grade?.value || 0}
                               onChange={(e) => {
                                 const val = parseInt(e.target.value);
-                                handleGradeChange(snap.id, p.id, val || null);
+                                handleGradeChange(snap.id, player.id, val || null);
                               }}
                               onBlur={() => setEditingCell(null)}
                               className="w-12 bg-white/[0.06] border border-white/20 rounded px-1 py-0.5 text-xs text-white text-center focus:outline-none"
@@ -517,7 +676,7 @@ export default function GradesPage() {
                 {/* Add new snap row */}
                 <tr className="bg-white/[0.02]">
                   <td className="px-3 py-2 text-xs text-white/40">{(gameData.snaps.length || 0) + 1}</td>
-                  <td className="px-3 py-2" colSpan={players.length + 3}>
+                  <td className="px-3 py-2" colSpan={gradeColumns.length + 3 + (availableSubs.length > 0 ? 1 : 0)}>
                     <form onSubmit={handleAddSnap} className="flex items-center gap-2">
                       <select
                         value={newPlayType}
@@ -528,14 +687,30 @@ export default function GradesPage() {
                         <option value="pass">Pass</option>
                         <option value="draw-screen">Draw</option>
                       </select>
-                      <input
-                        ref={newPlayRef}
-                        type="text"
-                        value={newPlayName}
-                        onChange={(e) => setNewPlayName(e.target.value)}
-                        placeholder="Play name (e.g. RED WAGON)..."
-                        className="flex-1 bg-white/[0.06] border border-white/10 rounded px-3 py-1.5 text-xs text-white uppercase focus:ring-2 focus:ring-white/30 focus:outline-none placeholder:normal-case"
-                      />
+                      {(() => {
+                        const opts = plays.filter((p) => p.category === newPlayType);
+                        return opts.length > 0 ? (
+                          <select
+                            ref={newPlayRef}
+                            value={newPlayName}
+                            onChange={(e) => setNewPlayName(e.target.value)}
+                            className="flex-1 bg-white/[0.06] border border-white/10 rounded px-3 py-1.5 text-xs text-white uppercase focus:ring-2 focus:ring-white/30 focus:outline-none"
+                          >
+                            <option value="">— Select Play —</option>
+                            {opts.map((p) => (
+                              <option key={p.id} value={p.name.toUpperCase()}>{p.name.toUpperCase()}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={newPlayName}
+                            onChange={(e) => setNewPlayName(e.target.value)}
+                            placeholder="Play name — add plays on Runs/Pass/Draw pages first"
+                            className="flex-1 bg-white/[0.06] border border-white/10 rounded px-3 py-1.5 text-xs text-white uppercase focus:ring-2 focus:ring-white/30 focus:outline-none placeholder:normal-case placeholder:text-white/30"
+                          />
+                        );
+                      })()}
                       <button type="submit" className="bg-primary-500 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1">
                         <Plus size={12} /> Add
                       </button>

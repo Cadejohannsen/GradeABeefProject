@@ -25,6 +25,7 @@ export async function PUT(
       pressures: data.pressures ?? 0,
       badSnaps: data.badSnaps ?? 0,
       knockdowns: data.knockdowns ?? 0,
+      da: data.da ?? 0,
     },
     update: {
       sacks: data.sacks ?? undefined,
@@ -33,6 +34,7 @@ export async function PUT(
       pressures: data.pressures ?? undefined,
       badSnaps: data.badSnaps ?? undefined,
       knockdowns: data.knockdowns ?? undefined,
+      da: data.da ?? undefined,
     },
   });
 
