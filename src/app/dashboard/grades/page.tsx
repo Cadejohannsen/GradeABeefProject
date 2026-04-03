@@ -58,10 +58,10 @@ function Modal({ open, onClose, title, children }: {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-card border border-primary-500/30 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 z-10">
+      <div className="relative backdrop-blur-xl bg-white/[0.08] border border-white/15 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 z-10">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-foreground">{title}</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white"><X size={20} /></button>
         </div>
         {children}
       </div>
@@ -76,7 +76,7 @@ function gradeColor(v: number) {
     case 3: return "text-yellow-400";
     case 2: return "text-orange-400";
     case 1: return "text-red-500";
-    default: return "text-muted-foreground";
+    default: return "text-white/30";
   }
 }
 
@@ -238,10 +238,10 @@ export default function GradesPage() {
   if (players.length === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">Grades</h1>
-        <div className="bg-card border border-border rounded-lg p-12 text-center">
-          <Star size={48} className="mx-auto text-muted-foreground mb-4" />
-          <p className="text-sm text-muted-foreground">Add players to your roster first before grading.</p>
+        <h1 className="text-2xl font-bold text-white mb-2">Grades</h1>
+        <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-12 text-center">
+          <Star size={48} className="mx-auto text-white/20 mb-4" />
+          <p className="text-sm text-white/40">Add players to your roster first before grading.</p>
         </div>
       </div>
     );
@@ -253,15 +253,15 @@ export default function GradesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">OL Grades</h1>
-          <p className="text-sm text-muted-foreground">Play-by-play grading &amp; summary stats</p>
+          <h1 className="text-2xl font-bold text-white">OL Grades</h1>
+          <p className="text-sm text-white/40">Play-by-play grading &amp; summary stats</p>
         </div>
       </div>
 
       {/* Game selector */}
-      <div className="bg-card border border-border rounded-lg px-4 py-3 mb-6 flex items-center gap-3 flex-wrap">
+      <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Game</label>
+          <label className="text-xs text-white/40">Game</label>
           <select
             value={selectedGameId || ""}
             onChange={(e) => {
@@ -269,7 +269,7 @@ export default function GradesPage() {
               if (v === "__add__") { setShowNewGame(true); return; }
               setSelectedGameId(v || null);
             }}
-            className="bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary-500 focus:outline-none min-w-[260px]"
+            className="bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none min-w-[260px]"
           >
             <option value="">Select a game...</option>
             {games.map((g) => (
@@ -284,26 +284,26 @@ export default function GradesPage() {
 
       {/* Player Summary (shows when a game is selected) */}
       {selectedGameId && (
-        <div className="bg-card border border-border rounded-lg overflow-x-auto mb-6">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-bold text-foreground">Players — Game Summary</h3>
+        <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-x-auto mb-6">
+          <div className="px-4 py-3 border-b border-white/10">
+            <h3 className="text-sm font-bold text-white">Players — Game Summary</h3>
           </div>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-2 text-xs text-muted-foreground font-medium min-w-[140px]">PLAYER</th>
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium w-16"></th>
-                <th className="text-center px-2 py-2 text-xs text-muted-foreground font-medium min-w-[55px]">SNAPS</th>
-                <th className="text-center px-2 py-2 text-xs text-muted-foreground font-medium min-w-[65px]">JOB %</th>
-                <th className="text-center px-2 py-2 text-xs text-muted-foreground font-medium min-w-[65px]">TECH %</th>
-                <th className="text-center px-2 py-2 text-xs text-muted-foreground font-medium min-w-[65px]">FINAL %</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[50px]">SACKS</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[50px]">MA's</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[65px]">PEN</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[65px]">PRESS</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[60px]">B.SNAP</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[55px]">KD</th>
-                <th className="text-center px-1 py-2 text-xs text-muted-foreground font-medium min-w-[45px]">DA</th>
+              <tr className="border-b border-white/10 bg-white/[0.03]">
+                <th className="text-left px-4 py-2 text-xs text-white/40 font-medium min-w-[140px]">PLAYER</th>
+                <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-16"></th>
+                <th className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[55px]">SNAPS</th>
+                <th className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[65px]">JOB %</th>
+                <th className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[65px]">TECH %</th>
+                <th className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[65px]">FINAL %</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[50px]">SACKS</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[50px]">MA's</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[65px]">PEN</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[65px]">PRESS</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[60px]">B.SNAP</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[55px]">KD</th>
+                <th className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[45px]">DA</th>
               </tr>
             </thead>
             <tbody>
@@ -314,7 +314,7 @@ export default function GradesPage() {
                 const hasGrades = total.snaps > 0;
 
                 function statCell(val: number, snaps: number) {
-                  if (snaps === 0) return <td className="text-center px-2 py-1.5 text-xs text-muted-foreground/40">—</td>;
+                  if (snaps === 0) return <td className="text-center px-2 py-1.5 text-xs text-white/20">—</td>;
                   const cls = val >= 80 ? "text-green-400" : val >= 60 ? "text-yellow-400" : "text-red-500";
                   return <td className={`text-center px-2 py-1.5 text-xs font-bold ${cls}`}>{val}%</td>;
                 }
@@ -322,13 +322,13 @@ export default function GradesPage() {
                 return (
                   <React.Fragment key={p.id}>
                     {/* RUN row */}
-                    <tr className={`border-t border-border/50 ${hasGrades ? "" : "opacity-40"}`}>
-                      <td className="px-4 py-1.5 font-medium text-foreground text-xs" rowSpan={3}>
+                    <tr className={`border-t border-white/[0.06] ${hasGrades ? "" : "opacity-40"}`}>
+                      <td className="px-4 py-1.5 font-medium text-white text-xs" rowSpan={3}>
                         <div className="font-semibold">{p.name}</div>
-                        <div className="text-muted-foreground">{p.position} #{p.number}</div>
+                        <div className="text-white/40">{p.position} #{p.number}</div>
                       </td>
                       <td className="px-3 py-1.5 text-xs font-medium text-blue-400">RUN</td>
-                      <td className="text-center px-2 py-1.5 text-xs text-foreground">{run.snaps}</td>
+                      <td className="text-center px-2 py-1.5 text-xs text-white">{run.snaps}</td>
                       {statCell(run.jobPct, run.snaps)}
                       {statCell(run.techPct, run.snaps)}
                       {statCell(run.totalPct, run.snaps)}
@@ -337,16 +337,16 @@ export default function GradesPage() {
                     {/* PASS row */}
                     <tr>
                       <td className="px-3 py-1.5 text-xs font-medium text-purple-400">PASS</td>
-                      <td className="text-center px-2 py-1.5 text-xs text-foreground">{pass.snaps}</td>
+                      <td className="text-center px-2 py-1.5 text-xs text-white">{pass.snaps}</td>
                       {statCell(pass.jobPct, pass.snaps)}
                       {statCell(pass.techPct, pass.snaps)}
                       {statCell(pass.totalPct, pass.snaps)}
                       <td colSpan={7}></td>
                     </tr>
                     {/* TOTAL row — includes editable stats */}
-                    <tr className="border-b-2 border-border bg-muted/10">
-                      <td className="px-3 py-1.5 text-xs font-bold text-foreground">TOTAL</td>
-                      <td className="text-center px-2 py-1.5 text-xs font-bold text-foreground">{total.snaps}</td>
+                    <tr className="border-b-2 border-white/10 bg-white/[0.03]">
+                      <td className="px-3 py-1.5 text-xs font-bold text-white">TOTAL</td>
+                      <td className="text-center px-2 py-1.5 text-xs font-bold text-white">{total.snaps}</td>
                       {statCell(total.jobPct, total.snaps)}
                       {statCell(total.techPct, total.snaps)}
                       {statCell(total.totalPct, total.snaps)}
@@ -363,7 +363,7 @@ export default function GradesPage() {
                                 const nv = parseInt(e.target.value) || 0;
                                 if (nv !== val) handleStatChange(p.id, field, nv);
                               }}
-                              className="w-10 bg-transparent border border-border/50 rounded text-center text-xs text-foreground py-0.5 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                              className="w-10 bg-transparent border border-white/10 rounded text-center text-xs text-white py-0.5 focus:ring-1 focus:ring-white/30 focus:outline-none"
                             />
                           </td>
                         );
@@ -379,10 +379,10 @@ export default function GradesPage() {
 
       {/* No game selected */}
       {!selectedGameId && (
-        <div className="bg-card border border-border rounded-lg p-12 text-center">
-          <p className="text-sm text-muted-foreground mb-4">Select or create a game to start grading.</p>
+        <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-12 text-center">
+          <p className="text-sm text-white/40 mb-4">Select or create a game to start grading.</p>
           <button onClick={() => setShowNewGame(true)}
-            className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+            className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors">
             Create Game
           </button>
         </div>
@@ -392,47 +392,47 @@ export default function GradesPage() {
       {gameData && (
         <>
           {/* Game header */}
-          <div className="bg-gradient-to-r from-primary-900/60 via-primary-800/40 to-background rounded-xl p-5 border border-primary-800/30 mb-6">
-            <h2 className="text-xl font-bold text-foreground">
+          <div className="backdrop-blur-md bg-white/[0.04] rounded-2xl p-5 border border-white/10 mb-6">
+            <h2 className="text-xl font-bold text-white">
               Game {gameData.weekNumber} — vs {gameData.opponent}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-white/40 mt-1">
               Date: {new Date(gameData.date).toLocaleDateString()} · {gameData.snaps.length} snaps graded
             </p>
           </div>
 
           {/* KEY legend */}
-          <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">KEY:</span>
+          <div className="flex items-center gap-4 mb-4 text-xs text-white/40">
+            <span className="font-medium text-white">KEY:</span>
             <span><span className="text-green-400 font-bold">4</span>=(+)(+)</span>
             <span><span className="text-yellow-400 font-bold">3</span>=(+)(-)</span>
             <span><span className="text-orange-400 font-bold">2</span>=(-)(+)</span>
             <span><span className="text-red-500 font-bold">1</span>=(-)(-)  </span>
-            <span className="ml-2 text-foreground/60">Job / Technique</span>
+            <span className="ml-2 text-white/50">Job / Technique</span>
           </div>
 
           {/* Grading table */}
-          <div className="bg-card border border-border rounded-lg overflow-x-auto mb-6">
+          <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-x-auto mb-6">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium w-10">#</th>
-                  <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium w-16">TYPE</th>
-                  <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium min-w-[160px]">PLAY</th>
+                <tr className="border-b border-white/10 bg-white/[0.03]">
+                  <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-10">#</th>
+                  <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-16">TYPE</th>
+                  <th className="text-left px-3 py-2 text-xs text-white/40 font-medium min-w-[160px]">PLAY</th>
                   {players.map((p) => (
-                    <th key={p.id} className="text-center px-2 py-2 text-xs text-muted-foreground font-medium min-w-[60px]">
+                    <th key={p.id} className="text-center px-2 py-2 text-xs text-white/40 font-medium min-w-[60px]">
                       <div>{p.position}</div>
-                      <div className="text-foreground font-bold">#{p.number}</div>
+                      <div className="text-white font-bold">#{p.number}</div>
                     </th>
                   ))}
-                  <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium min-w-[140px]">COMMENTS</th>
+                  <th className="text-left px-3 py-2 text-xs text-white/40 font-medium min-w-[140px]">COMMENTS</th>
                   <th className="w-8"></th>
                 </tr>
               </thead>
               <tbody>
                 {gameData.snaps.map((snap) => (
-                  <tr key={snap.id} className="border-b border-border/30 hover:bg-muted/20">
-                    <td className="px-3 py-1.5 text-xs text-muted-foreground">{snap.snapNumber}</td>
+                  <tr key={snap.id} className="border-b border-white/[0.06] hover:bg-white/[0.03]">
+                    <td className="px-3 py-1.5 text-xs text-white/40">{snap.snapNumber}</td>
                     <td className="px-2 py-1">
                       <select
                         value={snap.playType}
@@ -445,14 +445,14 @@ export default function GradesPage() {
                           });
                           await fetchGameData(selectedGameId);
                         }}
-                        className="bg-transparent border border-border/40 rounded text-xs text-muted-foreground focus:ring-1 focus:ring-primary-500 focus:outline-none py-0.5 px-1"
+                        className="bg-transparent border border-white/10 rounded text-xs text-white/50 focus:ring-1 focus:ring-white/30 focus:outline-none py-0.5 px-1"
                       >
                         <option value="run">Run</option>
                         <option value="pass">Pass</option>
                         <option value="draw-screen">Draw</option>
                       </select>
                     </td>
-                    <td className="px-3 py-1.5 font-medium text-foreground text-xs uppercase">{snap.playName}</td>
+                    <td className="px-3 py-1.5 font-medium text-white text-xs uppercase">{snap.playName}</td>
                     {players.map((p) => {
                       const grade = snap.grades.find((g) => g.playerId === p.id);
                       const cellKey = `${snap.id}-${p.id}`;
@@ -469,7 +469,7 @@ export default function GradesPage() {
                                 handleGradeChange(snap.id, p.id, val || null);
                               }}
                               onBlur={() => setEditingCell(null)}
-                              className="w-12 bg-muted border border-primary-500 rounded px-1 py-0.5 text-xs text-foreground text-center focus:outline-none"
+                              className="w-12 bg-white/[0.06] border border-white/20 rounded px-1 py-0.5 text-xs text-white text-center focus:outline-none"
                             >
                               <option value={0}>—</option>
                               <option value={4}>4</option>
@@ -480,8 +480,8 @@ export default function GradesPage() {
                           ) : (
                             <button
                               onClick={() => setEditingCell(cellKey)}
-                              className={`w-8 h-7 rounded text-xs font-bold cursor-pointer hover:ring-1 hover:ring-primary-500 transition-all ${
-                                grade ? gradeColor(grade.value) : "text-muted-foreground/30"
+                              className={`w-8 h-7 rounded text-xs font-bold cursor-pointer hover:ring-1 hover:ring-white/30 transition-all ${
+                                grade ? gradeColor(grade.value) : "text-white/20"
                               }`}
                             >
                               {grade ? grade.value : "·"}
@@ -499,14 +499,14 @@ export default function GradesPage() {
                             handleCommentChange(snap.id, e.target.value);
                           }
                         }}
-                        className="w-full bg-transparent border-none text-xs text-muted-foreground focus:text-foreground focus:outline-none focus:ring-1 focus:ring-primary-500/30 rounded px-1 py-0.5"
+                        className="w-full bg-transparent border-none text-xs text-white/40 focus:text-white focus:outline-none focus:ring-1 focus:ring-white/20 rounded px-1 py-0.5"
                         placeholder="..."
                       />
                     </td>
                     <td className="px-1 py-1">
                       <button
                         onClick={() => handleDeleteSnap(snap.id)}
-                        className="text-muted-foreground/30 hover:text-accent-500 transition-colors"
+                        className="text-white/20 hover:text-red-400 transition-colors"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -515,14 +515,14 @@ export default function GradesPage() {
                 ))}
 
                 {/* Add new snap row */}
-                <tr className="bg-muted/10">
-                  <td className="px-3 py-2 text-xs text-muted-foreground">{(gameData.snaps.length || 0) + 1}</td>
+                <tr className="bg-white/[0.02]">
+                  <td className="px-3 py-2 text-xs text-white/40">{(gameData.snaps.length || 0) + 1}</td>
                   <td className="px-3 py-2" colSpan={players.length + 3}>
                     <form onSubmit={handleAddSnap} className="flex items-center gap-2">
                       <select
                         value={newPlayType}
                         onChange={(e) => setNewPlayType(e.target.value)}
-                        className="bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                        className="bg-white/[0.06] border border-white/10 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-white/30 focus:outline-none"
                       >
                         <option value="run">Run</option>
                         <option value="pass">Pass</option>
@@ -534,9 +534,9 @@ export default function GradesPage() {
                         value={newPlayName}
                         onChange={(e) => setNewPlayName(e.target.value)}
                         placeholder="Play name (e.g. RED WAGON)..."
-                        className="flex-1 bg-muted border border-border rounded px-3 py-1.5 text-xs text-foreground uppercase focus:ring-2 focus:ring-primary-500 focus:outline-none placeholder:normal-case"
+                        className="flex-1 bg-white/[0.06] border border-white/10 rounded px-3 py-1.5 text-xs text-white uppercase focus:ring-2 focus:ring-white/30 focus:outline-none placeholder:normal-case"
                       />
-                      <button type="submit" className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1">
+                      <button type="submit" className="bg-primary-500 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1">
                         <Plus size={12} /> Add
                       </button>
                     </form>
@@ -547,16 +547,16 @@ export default function GradesPage() {
           </div>
 
           {/* ── Summary Stats ── */}
-          <div className="bg-card border border-border rounded-lg overflow-x-auto mb-6">
-            <div className="px-4 py-3 border-b border-border">
-              <h3 className="text-sm font-bold text-foreground">GRADE SUMMARY</h3>
+          <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-x-auto mb-6">
+            <div className="px-4 py-3 border-b border-white/10">
+              <h3 className="text-sm font-bold text-white">GRADE SUMMARY</h3>
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-2 text-xs text-muted-foreground font-medium min-w-[140px]">STAT</th>
+                <tr className="border-b border-white/10 bg-white/[0.03]">
+                  <th className="text-left px-4 py-2 text-xs text-white/40 font-medium min-w-[140px]">STAT</th>
                   {players.map((p) => (
-                    <th key={p.id} className="text-center px-2 py-2 text-xs font-bold text-foreground min-w-[80px]">
+                    <th key={p.id} className="text-center px-2 py-2 text-xs font-bold text-white min-w-[80px]">
                       #{p.number}
                     </th>
                   ))}
@@ -564,16 +564,16 @@ export default function GradesPage() {
               </thead>
               <tbody>
                 {/* Snaps */}
-                <tr className="border-b border-border/30">
-                  <td className="px-4 py-2 font-medium text-foreground text-xs">SNAPS</td>
+                <tr className="border-b border-white/[0.06]">
+                  <td className="px-4 py-2 font-medium text-white text-xs">SNAPS</td>
                   {players.map((p) => {
                     const s = calcStats(p.id);
-                    return <td key={p.id} className="text-center px-2 py-2 text-xs text-foreground">{s.snaps}</td>;
+                    return <td key={p.id} className="text-center px-2 py-2 text-xs text-white">{s.snaps}</td>;
                   })}
                 </tr>
                 {/* Job % */}
-                <tr className="border-b border-border/30">
-                  <td className="px-4 py-2 font-medium text-foreground text-xs">JOB %</td>
+                <tr className="border-b border-white/[0.06]">
+                  <td className="px-4 py-2 font-medium text-white text-xs">JOB %</td>
                   {players.map((p) => {
                     const s = calcStats(p.id);
                     return (
@@ -584,8 +584,8 @@ export default function GradesPage() {
                   })}
                 </tr>
                 {/* Tech % */}
-                <tr className="border-b border-border/30">
-                  <td className="px-4 py-2 font-medium text-foreground text-xs">TECH %</td>
+                <tr className="border-b border-white/[0.06]">
+                  <td className="px-4 py-2 font-medium text-white text-xs">TECH %</td>
                   {players.map((p) => {
                     const s = calcStats(p.id);
                     return (
@@ -596,8 +596,8 @@ export default function GradesPage() {
                   })}
                 </tr>
                 {/* Final % */}
-                <tr className="border-b border-border bg-muted/20">
-                  <td className="px-4 py-2 font-bold text-foreground text-xs">FINAL %</td>
+                <tr className="border-b border-white/10 bg-white/[0.03]">
+                  <td className="px-4 py-2 font-bold text-white text-xs">FINAL %</td>
                   {players.map((p) => {
                     const s = calcStats(p.id);
                     return (
@@ -618,43 +618,43 @@ export default function GradesPage() {
       <Modal open={showNewGame} onClose={() => setShowNewGame(false)} title="Create New Game">
         <form onSubmit={handleCreateGame} className="space-y-4">
           <div>
-            <label className="block text-xs text-muted-foreground mb-2">Opponent *</label>
+            <label className="block text-xs text-white/40 mb-2">Opponent *</label>
             <input
               type="text"
               value={newGame.opponent}
               onChange={(e) => setNewGame({ ...newGame, opponent: e.target.value })}
               placeholder="e.g. Whitworth"
-              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
               autoFocus required
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-muted-foreground mb-2">Date *</label>
+              <label className="block text-xs text-white/40 mb-2">Date *</label>
               <input
                 type="date"
                 value={newGame.date}
                 onChange={(e) => setNewGame({ ...newGame, date: e.target.value })}
-                className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-2">Game #</label>
+              <label className="block text-xs text-white/40 mb-2">Game #</label>
               <input
                 type="number"
                 min={1}
                 value={newGame.weekNumber}
                 onChange={(e) => setNewGame({ ...newGame, weekNumber: parseInt(e.target.value) || 1 })}
-                className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
               />
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-2">
             <button type="button" onClick={() => setShowNewGame(false)}
-              className="px-5 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancel</button>
             <button type="submit"
-              className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">Create Game</button>
+              className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors">Create Game</button>
           </div>
         </form>
       </Modal>

@@ -17,9 +17,6 @@ const dashboardCards = [
     icon: Users,
     href: "/dashboard/players",
     stat: "Players",
-    color: "border-primary-500/40 hover:border-primary-500",
-    iconColor: "text-primary-400",
-    bgGlow: "bg-primary-500/5",
   },
   {
     title: "Game Report",
@@ -27,9 +24,6 @@ const dashboardCards = [
     icon: FileText,
     href: "/dashboard/grades",
     stat: "Games",
-    color: "border-accent-600/40 hover:border-accent-500",
-    iconColor: "text-accent-500",
-    bgGlow: "bg-accent/5",
   },
   {
     title: "T-Grade",
@@ -37,9 +31,6 @@ const dashboardCards = [
     icon: Star,
     href: "/dashboard/grades",
     stat: "Avg Grade",
-    color: "border-yellow-500/40 hover:border-yellow-400",
-    iconColor: "text-yellow-400",
-    bgGlow: "bg-yellow-500/5",
   },
   {
     title: "Top Job",
@@ -47,9 +38,6 @@ const dashboardCards = [
     icon: Trophy,
     href: "/dashboard/grades",
     stat: "Top Player",
-    color: "border-green-500/40 hover:border-green-400",
-    iconColor: "text-green-400",
-    bgGlow: "bg-green-500/5",
   },
   {
     title: "Top Tech",
@@ -57,9 +45,6 @@ const dashboardCards = [
     icon: Wrench,
     href: "/dashboard/grades",
     stat: "Top Tech",
-    color: "border-cyan-500/40 hover:border-cyan-400",
-    iconColor: "text-cyan-400",
-    bgGlow: "bg-cyan-500/5",
   },
 ];
 
@@ -67,9 +52,9 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <div className="bg-gradient-to-r from-primary-900/60 via-primary-800/40 to-background rounded-xl p-6 border border-primary-800/30">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+        <div className="backdrop-blur-md bg-white/[0.04] rounded-2xl p-6 border border-primary-500/30">
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-white/40 mt-1">
             Welcome back, Coach. Here&apos;s your team overview.
           </p>
         </div>
@@ -81,32 +66,30 @@ export default function DashboardPage() {
           return (
             <Link key={card.title} href={card.href}>
               <div
-                className={`group relative bg-card rounded-xl border ${card.color} p-5 transition-all duration-200 hover:shadow-lg hover:shadow-primary-500/5 cursor-pointer h-full ${card.bgGlow}`}
+                className="group relative backdrop-blur-md bg-white/[0.04] rounded-2xl border border-white/10 hover:border-primary-400/40 p-5 transition-all duration-200 hover:shadow-lg hover:shadow-primary-500/10 cursor-pointer h-full"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`p-2.5 rounded-lg bg-muted ${card.iconColor}`}
-                  >
+                  <div className="p-2.5 rounded-lg bg-primary-500/15 text-primary-300">
                     <Icon size={22} />
                   </div>
                   <ChevronRight
                     size={16}
-                    className="text-muted-foreground group-hover:text-foreground transition-colors"
+                    className="text-white/20 group-hover:text-primary-400 transition-colors"
                   />
                 </div>
 
-                <h3 className="text-lg font-semibold text-foreground mb-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   {card.title}
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-white/40">
                   {card.description}
                 </p>
 
-                <div className="mt-4 pt-3 border-t border-border">
-                  <span className="text-xs text-muted-foreground">
+                <div className="mt-4 pt-3 border-t border-white/10">
+                  <span className="text-xs text-white/30">
                     {card.stat}
                   </span>
-                  <p className="text-xl font-bold text-foreground">--</p>
+                  <p className="text-xl font-bold text-white">--</p>
                 </div>
               </div>
             </Link>

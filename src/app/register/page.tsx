@@ -48,95 +48,111 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-500 mb-2">🥩 GradeABeef</h1>
-          <p className="text-muted-foreground">Create Your Coach Account</p>
-        </div>
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Video background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/register-bg.mp4" type="video/mp4" />
+      </video>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border border-border rounded-lg p-8 space-y-6"
-        >
-          <h2 className="text-2xl font-semibold text-foreground">Register</h2>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/70" />
+
+      {/* Registration card */}
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl space-y-5">
+          <h2 className="text-lg font-semibold text-white text-center">Create Your Account</h2>
 
           {error && (
-            <div className="bg-accent/10 border border-accent/30 text-accent-400 px-4 py-3 rounded-md text-sm">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Coach Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Coach Johnson"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider">
+                Coach Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                placeholder="Coach Johnson"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="coach@team.com"
-              required
-            />
-          </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                placeholder="coach@team.com"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Team Name
-            </label>
-            <input
-              type="text"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Wildcats"
-            />
-          </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider">
+                Team Name
+              </label>
+              <input
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                placeholder="Wildcats"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-md transition-colors disabled:opacity-50"
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-white text-black font-semibold py-2.5 rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 text-sm mt-2"
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+          </form>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs text-white/40">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary-400 hover:text-primary-300">
+            <Link href="/signin" className="text-white/70 hover:text-white transition-colors">
               Sign In
             </Link>
           </p>
-        </form>
+        </div>
+
+        <button
+          onClick={() => router.push("/login")}
+          className="w-full mt-4 text-xs text-white/30 hover:text-white/60 py-2 transition-colors"
+        >
+          &larr; Back
+        </button>
       </div>
     </div>
   );

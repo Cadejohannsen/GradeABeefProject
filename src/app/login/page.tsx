@@ -1,105 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (res?.error) {
-      setError("Invalid email or password");
-      setLoading(false);
-    } else {
-      router.push("/dashboard");
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-500 mb-2">🥩 GradeABeef</h1>
-          <p className="text-muted-foreground">Lineman Grade Tracker</p>
-        </div>
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Video background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/login-bg.mp4" type="video/mp4" />
+      </video>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border border-border rounded-lg p-8 space-y-6"
-        >
-          <h2 className="text-2xl font-semibold text-foreground">Coach Login</h2>
+      {/* Dark overlay to subdue the video */}
+      <div className="absolute inset-0 bg-black/70" />
 
-          {error && (
-            <div className="bg-accent/10 border border-accent/30 text-accent-400 px-4 py-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+      {/* Large logo behind content */}
+      <img
+        src="/logo.png"
+        alt="Linfield Wildcats"
+        className="absolute z-10 object-contain drop-shadow-2xl pointer-events-none"
+        style={{ width: "900px", height: "900px", top: "50%", left: "50%", transform: "translate(-50%, -62%)" }}
+      />
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="coach@team.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-muted border border-border rounded-md px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-md transition-colors disabled:opacity-50"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary-400 hover:text-primary-300">
-              Register
-            </Link>
-          </p>
-        </form>
+      {/* Content on top */}
+      <div className="relative z-20 flex flex-col items-center" style={{ marginTop: "220px" }}>
+        <h1 className="text-7xl font-extrabold mb-2 holo-text" style={{ letterSpacing: "0.15em" }}>Grade-A-Beef</h1>
+        <p className="text-base text-white/50 uppercase mb-8" style={{ letterSpacing: "0.3em" }}>Lineman Grade Tracker</p>
 
         <button
-          onClick={() => router.push("/dashboard")}
-          className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground py-2 transition-colors"
+          onClick={() => router.push("/signin")}
+          className="bg-white text-black font-semibold py-3 px-12 rounded-lg hover:bg-white/90 transition-colors text-sm"
         >
-          Skip for now →
+          Login
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -26,17 +26,19 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[180px] bg-sidebar flex flex-col border-r border-border z-50">
-      <div className="p-4 border-b border-border">
-        <h1 className="text-lg font-bold text-primary-400 tracking-tight">
-          🥩 GradeABeef
+    <aside className="fixed left-0 top-0 h-screen w-[200px] backdrop-blur-xl bg-white/[0.03] flex flex-col border-r border-white/10 z-50">
+      <div className="p-5 border-b border-white/10">
+        <h1 className="text-base font-bold text-primary-300 tracking-tight">
+          Grade-A-Beef
         </h1>
+        <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Lineman Tracker</p>
       </div>
 
-      <nav className="flex-1 py-4 space-y-1 px-2">
+      <nav className="flex-1 py-4 space-y-0.5 px-3">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -48,10 +50,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary-500/20 text-primary-400 border-l-2 border-primary-500"
-                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-white"
+                  ? "bg-primary-500/20 text-primary-300 border-l-2 border-primary-400"
+                  : "text-white/50 hover:bg-primary-500/10 hover:text-white/80"
               )}
             >
               <Icon size={18} />
@@ -61,23 +63,23 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-border">
-        <div className="flex items-center gap-2 px-2 py-2">
+      <div className="p-4 border-t border-white/10">
+        <div className="flex items-center gap-2.5 px-1 py-2">
           <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center">
-            <User size={16} className="text-primary-200" />
+            <User size={14} className="text-primary-200" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-sidebar-foreground truncate">
+            <p className="text-xs font-medium text-white/80 truncate">
               {session?.user?.name || "Coach"}
             </p>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[10px] text-white/30 truncate">
               {session?.user?.email || ""}
             </p>
           </div>
         </div>
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-2 w-full px-3 py-2 mt-1 text-xs text-muted-foreground hover:text-accent-500 rounded-md hover:bg-accent/10 transition-colors"
+          onClick={async () => { await signOut({ redirect: false }); router.push("/login"); }}
+          className="flex items-center gap-2 w-full px-3 py-2 mt-1 text-xs text-white/40 hover:text-red-400 rounded-lg hover:bg-white/[0.06] transition-colors"
         >
           <LogOut size={14} />
           <span>Sign Out</span>
