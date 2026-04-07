@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { update, remove, type Player } from "@/lib/json-db";
 
 export async function PUT(
   req: Request,
@@ -7,16 +7,13 @@ export async function PUT(
 ) {
   const data = await req.json();
 
-  const player = await prisma.player.update({
-    where: { id: params.id },
-    data: {
-      name: data.name,
-      number: data.number,
-      position: data.position,
-      height: data.height || "",
-      weight: data.weight || "",
-      year: data.year || "",
-    },
+  const player = update<Player>("players", params.id, {
+    name: data.name,
+    number: data.number,
+    position: data.position,
+    height: data.height || "",
+    weight: data.weight || "",
+    year: data.year || "",
   });
 
   return NextResponse.json(player);
@@ -26,6 +23,6 @@ export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  await prisma.player.delete({ where: { id: params.id } });
-  return NextResponse.json({ ok: true });
+  const success = remove("players", params.id);
+  return NextResponse.json({ ok: success });
 }

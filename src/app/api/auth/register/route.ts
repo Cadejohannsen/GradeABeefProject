@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { findFirst, create, cuid, now, type Coach, type CreateCoach } from "@/lib/json-db";
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const existing = await prisma.coach.findUnique({ where: { email } });
+    const existing = findFirst<Coach>("coaches", { email });
     if (existing) {
       return NextResponse.json(
         { error: "Email already registered" },
@@ -23,8 +23,14 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const coach = await prisma.coach.create({
-      data: { name, email, passwordHash, teamName: teamName || "" },
+    const coach = create<CreateCoach>("coaches", {
+      id: cuid(),
+      name,
+      email,
+      passwordHash,
+      teamName: teamName || "",
+      createdAt: now(),
+      updatedAt: now(),
     });
 
     return NextResponse.json({ id: coach.id, name: coach.name, email: coach.email });

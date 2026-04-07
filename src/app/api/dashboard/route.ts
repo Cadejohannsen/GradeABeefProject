@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { findMany, type Player, type Game, type Season, type SnapGrade, type GameSnap } from "@/lib/json-db";
 import { getCoachId } from "@/lib/dev-auth";
 import { calcGradeStats, teamAvg, topPerformer } from "@/lib/grading";
 
@@ -7,24 +7,23 @@ export async function GET() {
   const coachId = await getCoachId();
 
   // Players
-  const players = await prisma.player.findMany({
-    where: { coachId },
-    orderBy: { number: "asc" },
-    select: { id: true, name: true, number: true, position: true, height: true, weight: true, year: true },
-  });
+  const players = findMany<Player>("players", { coachId }).sort((a, b) => a.number - b.number);
 
   // Games (with snap count)
-  const games = await prisma.game.findMany({
-    where: { season: { coachId } },
-    orderBy: { weekNumber: "asc" },
-    select: { id: true, opponent: true, weekNumber: true, date: true, _count: { select: { snaps: true } } },
-  });
+  const seasons = findMany<Season>("seasons", { coachId });
+  const games = findMany<Game>("games").filter(g => seasons.some(s => s.id === g.seasonId))
+    .sort((a, b) => a.weekNumber - b.weekNumber);
+
+  // Get all game snaps for these games
+  const gameIds = games.map(g => g.id);
+  const allSnaps = findMany<GameSnap>("gameSnaps").filter(s => gameIds.includes(s.gameId));
 
   // All snap grades for this coach's players
-  const allGrades = await prisma.snapGrade.findMany({
-    where: { player: { coachId } },
-    select: { playerId: true, value: true },
-  });
+  const playerIds = players.map(p => p.id);
+  const snapIds = allSnaps.map(s => s.id);
+  const allGrades = findMany<SnapGrade>("snapGrades").filter(g => 
+    playerIds.includes(g.playerId) && snapIds.includes(g.snapId)
+  );
 
   // Per-player grade stats using shared grading algorithm
   const playerStats = players.map((p) => {
@@ -48,7 +47,7 @@ export async function GET() {
   return NextResponse.json({
     playerCount: players.length,
     playerStats,
-    games: games.map((g) => ({ ...g, snapCount: g._count.snaps })),
+    games: games.map((g) => ({ ...g, snapCount: allSnaps.filter(s => s.gameId === g.id).length })),
     gameCount: games.length,
     recentGame: games[games.length - 1] ?? null,
     teamJobAvg,
