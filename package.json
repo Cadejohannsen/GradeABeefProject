@@ -24,6 +24,9 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
   },
+  "prisma": {
+    "seed": "node scripts/seed-players.js"
+  },
   "devDependencies": {
     "@types/node": "^20.17.0",
     "@types/react": "^18.3.12",
