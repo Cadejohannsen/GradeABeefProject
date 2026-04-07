@@ -121,6 +121,33 @@ export default function GradesPage() {
   // Inline editing
   const [editingCell, setEditingCell] = useState<string | null>(null); // "snapId-playerId"
 
+  // Focus the active grade cell whenever editingCell changes
+  useEffect(() => {
+    if (editingCell) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-grade-cell="${editingCell}"]`) as HTMLElement;
+        el?.focus();
+      });
+    }
+  }, [editingCell]);
+
+  // Close editing when clicking outside a grade cell
+  useEffect(() => {
+    function handleDocClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-grade-cell]") && !target.closest("[data-grade-btn]")) {
+        setEditingCell(null);
+      }
+    }
+    document.addEventListener("mousedown", handleDocClick);
+    return () => document.removeEventListener("mousedown", handleDocClick);
+  }, []);
+
+  // Starters & Subs
+  const [starters, setStarters] = useState<string[]>([]);
+  const [subs, setSubs] = useState<string[]>([]);
+  const [showSubPicker, setShowSubPicker] = useState(false);
+
   const fetchPlayers = useCallback(async () => {
     const res = await fetch("/api/players");
     if (res.ok) setPlayers(await res.json());
@@ -139,9 +166,65 @@ export default function GradesPage() {
   useEffect(() => { fetchPlayers(); fetchGames(); }, [fetchPlayers, fetchGames]);
 
   useEffect(() => {
-    if (selectedGameId) fetchGameData(selectedGameId);
-    else setGameData(null);
+    if (selectedGameId) {
+      fetchGameData(selectedGameId);
+      // Load starters/subs from localStorage for this game
+      const saved = localStorage.getItem(`lineup-${selectedGameId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setStarters(parsed.starters || []);
+        setSubs(parsed.subs || []);
+      } else {
+        setStarters([]);
+        setSubs([]);
+      }
+    } else {
+      setGameData(null);
+      setStarters([]);
+      setSubs([]);
+    }
   }, [selectedGameId, fetchGameData]);
+
+  // Persist lineup to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedGameId && (starters.length > 0 || subs.length > 0)) {
+      localStorage.setItem(`lineup-${selectedGameId}`, JSON.stringify({ starters, subs }));
+    }
+  }, [selectedGameId, starters, subs]);
+
+  // Active players = starters + subs (in order)
+  const activePlayers = [
+    ...starters.map((id) => players.find((p) => p.id === id)).filter(Boolean),
+    ...subs.map((id) => players.find((p) => p.id === id)).filter(Boolean),
+  ] as Player[];
+
+  // Available players not yet in starters or subs
+  const availableForStarter = players.filter((p) => !starters.includes(p.id) && !subs.includes(p.id));
+  const availableForSub = players.filter((p) => !starters.includes(p.id) && !subs.includes(p.id));
+
+  function setStarterSlot(index: number, playerId: string) {
+    const next = [...starters];
+    // If this player was already in a different starter slot, swap
+    const existingIdx = next.indexOf(playerId);
+    if (existingIdx !== -1 && existingIdx !== index) {
+      next[existingIdx] = next[index] || "";
+    }
+    next[index] = playerId;
+    setStarters(next.filter(Boolean));
+  }
+
+  function removeStarter(playerId: string) {
+    setStarters(starters.filter((id) => id !== playerId));
+  }
+
+  function addSub(playerId: string) {
+    if (!subs.includes(playerId)) setSubs([...subs, playerId]);
+    setShowSubPicker(false);
+  }
+
+  function removeSub(playerId: string) {
+    setSubs(subs.filter((id) => id !== playerId));
+  }
 
   /* ── game handlers ── */
   async function handleCreateGame(e: React.FormEvent) {
@@ -210,16 +293,15 @@ export default function GradesPage() {
   async function handleGradeChange(snapId: string, playerId: string, value: number | null) {
     if (!selectedGameId) return;
     const snap = gameData?.snaps.find((s) => s.id === snapId);
-    await fetch(`/api/games/${selectedGameId}/snaps/${snapId}`, {
+    // Fire-and-forget so navigation isn't blocked
+    fetch(`/api/games/${selectedGameId}/snaps/${snapId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         playName: snap?.playName || "",
         grades: [{ playerId, value }],
       }),
-    });
-    setEditingCell(null);
-    await fetchGameData(selectedGameId);
+    }).then(() => { if (selectedGameId) fetchGameData(selectedGameId); });
   }
 
   async function handleCommentChange(snapId: string, comment: string) {
@@ -252,6 +334,29 @@ export default function GradesPage() {
       body: JSON.stringify({ playerId, [field]: value }),
     });
     await fetchGameData(selectedGameId);
+  }
+
+  /* ── grade cell navigation (Tab support) ── */
+  function getAdjacentCell(snapId: string, playerId: string, direction: 1 | -1): string | null {
+    if (!gameData) return null;
+    const snaps = gameData.snaps;
+    const snapIdx = snaps.findIndex((s) => s.id === snapId);
+    const playerIdx = activePlayers.findIndex((p) => p.id === playerId);
+    if (snapIdx === -1 || playerIdx === -1) return null;
+
+    let nextPlayerIdx = playerIdx + direction;
+    let nextSnapIdx = snapIdx;
+
+    if (nextPlayerIdx >= activePlayers.length) {
+      nextPlayerIdx = 0;
+      nextSnapIdx += 1;
+    } else if (nextPlayerIdx < 0) {
+      nextPlayerIdx = activePlayers.length - 1;
+      nextSnapIdx -= 1;
+    }
+
+    if (nextSnapIdx < 0 || nextSnapIdx >= snaps.length) return null;
+    return `${snaps[nextSnapIdx].id}-${activePlayers[nextPlayerIdx].id}`;
   }
 
   /* ── summary calculations ── */
@@ -387,7 +492,7 @@ export default function GradesPage() {
               </tr>
             </thead>
             <tbody>
-              {players.map((p) => {
+              {activePlayers.map((p) => {
                 const run = calcStats(p.id, "run");
                 const pass = calcStats(p.id, "pass");
                 const total = calcStats(p.id);
@@ -491,6 +596,86 @@ export default function GradesPage() {
             <span className="ml-2 text-white/50">Job / Technique</span>
           </div>
 
+          {/* Lineup Picker — Starting 5 + Subs */}
+          <div className="bg-white/[0.04] border border-white/[0.08] rounded-md p-4 mb-4">
+            <div className="flex items-start gap-8">
+              {/* Starting 5 */}
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-3">Starting 5</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(["LT", "LG", "C", "RG", "RT"] as const).map((posLabel, slot) => {
+                    const starterId = starters[slot];
+                    const starterPlayer = starterId ? players.find((p) => p.id === starterId) : null;
+                    return (
+                      <div key={slot} className="relative">
+                        {starterPlayer ? (
+                          <div className="flex items-center gap-1.5 bg-primary-500/20 border border-primary-400/30 rounded px-3 py-1.5">
+                            <span className="text-[10px] font-bold text-primary-300 mr-0.5">{posLabel}</span>
+                            <span className="text-xs font-bold text-white">#{starterPlayer.number}</span>
+                            <span className="text-xs text-white/70">{starterPlayer.name}</span>
+                            <button onClick={() => removeStarter(starterId)} className="ml-1 text-white/30 hover:text-red-400 transition-colors"><X size={12} /></button>
+                          </div>
+                        ) : (
+                          <select
+                            value=""
+                            onChange={(e) => { if (e.target.value) setStarterSlot(slot, e.target.value); }}
+                            className="bg-[#1a1a1a] border border-dashed border-white/[0.15] rounded px-3 py-1.5 text-xs text-white/40 focus:ring-1 focus:ring-white/20 focus:outline-none min-w-[140px]"
+                          >
+                            <option value="" className="bg-[#1a1a1a] text-white/40">{posLabel} — Select...</option>
+                            {availableForStarter.map((p) => (
+                              <option key={p.id} value={p.id} className="bg-[#1a1a1a] text-white">#{p.number} {p.name} ({p.position})</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Subs */}
+              <div className="min-w-[200px]">
+                <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-3">Subs</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {subs.map((subId) => {
+                    const subPlayer = players.find((p) => p.id === subId);
+                    if (!subPlayer) return null;
+                    return (
+                      <div key={subId} className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.10] rounded px-3 py-1.5">
+                        <span className="text-xs font-bold text-white">#{subPlayer.number}</span>
+                        <span className="text-xs text-white/70">{subPlayer.name}</span>
+                        <button onClick={() => removeSub(subId)} className="ml-1 text-white/30 hover:text-red-400 transition-colors"><X size={12} /></button>
+                      </div>
+                    );
+                  })}
+                  {availableForSub.length > 0 && (
+                    showSubPicker ? (
+                      <select
+                        autoFocus
+                        value=""
+                        onChange={(e) => { if (e.target.value) addSub(e.target.value); }}
+                        onBlur={() => setShowSubPicker(false)}
+                        className="bg-[#1a1a1a] border border-white/[0.10] rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
+                      >
+                        <option value="" className="bg-[#1a1a1a] text-white/40">Pick sub...</option>
+                        {availableForSub.map((p) => (
+                          <option key={p.id} value={p.id} className="bg-[#1a1a1a] text-white">#{p.number} {p.name} ({p.position})</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <button
+                        onClick={() => setShowSubPicker(true)}
+                        className="flex items-center gap-1 border border-dashed border-white/[0.12] rounded px-2.5 py-1.5 text-xs text-white/30 hover:text-white/60 hover:border-white/[0.20] transition-all"
+                      >
+                        <Plus size={12} /> Add Sub
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Grading table */}
           <div className="bg-white/[0.04] border border-white/[0.08] rounded-md overflow-x-auto mb-6">
             <table className="w-full text-sm">
@@ -500,8 +685,8 @@ export default function GradesPage() {
                   <th className="text-left px-2 py-2 text-xs text-white/40 font-medium min-w-[140px]">PLAY</th>
                   <th className="text-center px-2 py-2 text-xs text-white/40 font-medium w-16">Run/Pass</th>
                   <th className="text-left px-2 py-2 text-xs text-white/40 font-medium min-w-[120px]">SCHEME</th>
-                  {players.map((p) => (
-                    <th key={p.id} className="text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[55px]">
+                  {activePlayers.map((p, i) => (
+                    <th key={p.id} className={`text-center px-1 py-2 text-xs text-white/40 font-medium min-w-[55px] ${i === starters.length ? "border-l-2 border-white/[0.15]" : ""}`}>
                       <div className="text-white/60">{p.position}</div>
                       <div className="text-white font-bold">#{p.number}</div>
                     </th>
@@ -548,32 +733,42 @@ export default function GradesPage() {
                         placeholder="..."
                       />
                     </td>
-                    {players.map((p) => {
+                    {activePlayers.map((p, i) => {
                       const grade = snap.grades.find((g) => g.playerId === p.id);
                       const cellKey = `${snap.id}-${p.id}`;
                       const isEditing = editingCell === cellKey;
 
                       return (
-                        <td key={p.id} className={`text-center px-1 py-1 ${grade ? gradeBg(grade.value) : ""}`}>
+                        <td key={p.id} className={`text-center px-1 py-1 ${grade ? gradeBg(grade.value) : ""} ${i === starters.length ? "border-l-2 border-white/[0.15]" : ""}`}>
                           {isEditing ? (
-                            <select
-                              autoFocus
-                              defaultValue={grade?.value || 0}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                handleGradeChange(snap.id, p.id, val || null);
+                            <div
+                              tabIndex={0}
+                              data-grade-cell={cellKey}
+                              onKeyDown={(e) => {
+                                if (["1", "2", "3", "4"].includes(e.key)) {
+                                  e.preventDefault();
+                                  handleGradeChange(snap.id, p.id, parseInt(e.key));
+                                  const next = getAdjacentCell(snap.id, p.id, 1);
+                                  setEditingCell(next);
+                                } else if (e.key === "Tab") {
+                                  e.preventDefault();
+                                  const dir = e.shiftKey ? -1 : 1;
+                                  const next = getAdjacentCell(snap.id, p.id, dir);
+                                  setEditingCell(next);
+                                } else if (e.key === "Escape") {
+                                  setEditingCell(null);
+                                } else if (e.key === "Backspace" || e.key === "Delete") {
+                                  handleGradeChange(snap.id, p.id, null);
+                                  setEditingCell(null);
+                                }
                               }}
-                              onBlur={() => setEditingCell(null)}
-                              className="w-12 bg-white/[0.06] border border-white/[0.10] rounded-sm px-1 py-0.5 text-xs text-white text-center focus:outline-none"
+                              className="w-10 h-8 mx-auto rounded ring-2 ring-primary-400 bg-white/[0.08] flex items-center justify-center text-xs font-bold text-white cursor-text outline-none"
                             >
-                              <option value={0}>—</option>
-                              <option value={4}>4</option>
-                              <option value={3}>3</option>
-                              <option value={2}>2</option>
-                              <option value={1}>1</option>
-                            </select>
+                              {grade ? grade.value : "·"}
+                            </div>
                           ) : (
                             <button
+                              data-grade-btn
                               onClick={() => setEditingCell(cellKey)}
                               className={`w-8 h-7 rounded text-xs font-bold cursor-pointer hover:ring-1 hover:ring-white/30 transition-all ${
                                 grade ? gradeColor(grade.value) : "text-white/20"
@@ -646,7 +841,7 @@ export default function GradesPage() {
                 {/* Add new snap row */}
                 <tr className="bg-white/[0.02] border-t border-white/[0.05]">
                   <td className="px-2 py-2 text-xs text-white/40 text-center">{(gameData.snaps.length || 0) + 1}</td>
-                  <td className="px-2 py-2" colSpan={players.length + 7}>
+                  <td className="px-2 py-2" colSpan={activePlayers.length + 7}>
                     <form onSubmit={handleAddSnap} className="flex items-center gap-2">
                       <input
                         ref={newPlayRef}
@@ -684,7 +879,7 @@ export default function GradesPage() {
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.02]">
                   <th className="text-left px-4 py-2 text-xs text-white/40 font-medium min-w-[140px]">STAT</th>
-                  {players.map((p) => (
+                  {activePlayers.map((p) => (
                     <th key={p.id} className="text-center px-2 py-2 text-xs font-bold text-white min-w-[80px]">
                       #{p.number}
                     </th>
@@ -695,7 +890,7 @@ export default function GradesPage() {
                 {/* Snaps */}
                 <tr className="border-b border-white/[0.05]">
                   <td className="px-4 py-2 font-medium text-white text-xs">SNAPS</td>
-                  {players.map((p) => {
+                  {activePlayers.map((p) => {
                     const s = calcStats(p.id);
                     return <td key={p.id} className="text-center px-2 py-2 text-xs text-white">{s.snaps}</td>;
                   })}
@@ -703,7 +898,7 @@ export default function GradesPage() {
                 {/* Job % */}
                 <tr className="border-b border-white/[0.05]">
                   <td className="px-4 py-2 font-medium text-white text-xs">JOB %</td>
-                  {players.map((p) => {
+                  {activePlayers.map((p) => {
                     const s = calcStats(p.id);
                     return (
                       <td key={p.id} className={`text-center px-2 py-2 text-xs font-bold ${s.jobPct >= 80 ? "text-green-400" : s.jobPct >= 60 ? "text-yellow-400" : "text-red-500"}`}>
@@ -715,7 +910,7 @@ export default function GradesPage() {
                 {/* Tech % */}
                 <tr className="border-b border-white/[0.05]">
                   <td className="px-4 py-2 font-medium text-white text-xs">TECH %</td>
-                  {players.map((p) => {
+                  {activePlayers.map((p) => {
                     const s = calcStats(p.id);
                     return (
                       <td key={p.id} className={`text-center px-2 py-2 text-xs font-bold ${s.techPct >= 80 ? "text-green-400" : s.techPct >= 60 ? "text-yellow-400" : "text-red-500"}`}>
@@ -727,7 +922,7 @@ export default function GradesPage() {
                 {/* Final % */}
                 <tr className="border-b border-white/[0.08] bg-white/[0.02]">
                   <td className="px-4 py-2 font-bold text-white text-xs">FINAL %</td>
-                  {players.map((p) => {
+                  {activePlayers.map((p) => {
                     const s = calcStats(p.id);
                     return (
                       <td key={p.id} className={`text-center px-2 py-2 text-xs font-bold ${s.totalPct >= 80 ? "text-green-400" : s.totalPct >= 60 ? "text-yellow-400" : "text-red-500"}`}>
