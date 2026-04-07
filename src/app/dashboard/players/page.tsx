@@ -78,7 +78,7 @@ export default function PlayersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Roster</h1>
+          <h1 className="text-4xl font-bold text-white">Roster</h1>
           <p className="text-sm text-white/40">
             {players.length} player{players.length !== 1 ? "s" : ""}
           </p>
@@ -89,7 +89,7 @@ export default function PlayersPage() {
             setEditingId(null);
             setForm({ name: "", number: "", position: "LT", height: "", weight: "", year: "" });
           }}
-          className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+          className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
         >
           <Plus size={16} />
           Add Player
@@ -99,7 +99,7 @@ export default function PlayersPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6 grid grid-cols-2 md:grid-cols-3 gap-4"
+          className="bg-white/[0.04] border border-white/[0.08] rounded-md p-6 mb-6 grid grid-cols-2 md:grid-cols-3 gap-4"
         >
           <div>
             <label className="block text-xs text-white/40 mb-1">Name</label>
@@ -107,7 +107,7 @@ export default function PlayersPage() {
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               required
             />
           </div>
@@ -117,7 +117,7 @@ export default function PlayersPage() {
               type="number"
               value={form.number}
               onChange={(e) => setForm({ ...form, number: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               required
             />
           </div>
@@ -126,7 +126,7 @@ export default function PlayersPage() {
             <select
               value={form.position}
               onChange={(e) => setForm({ ...form, position: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
             >
               {["LT", "LG", "C", "RG", "RT"].map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -139,7 +139,7 @@ export default function PlayersPage() {
               type="text"
               value={form.height}
               onChange={(e) => setForm({ ...form, height: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               placeholder="6'3&quot;"
             />
           </div>
@@ -149,7 +149,7 @@ export default function PlayersPage() {
               type="text"
               value={form.weight}
               onChange={(e) => setForm({ ...form, weight: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               placeholder="305"
             />
           </div>
@@ -159,21 +159,21 @@ export default function PlayersPage() {
               type="text"
               value={form.year}
               onChange={(e) => setForm({ ...form, year: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               placeholder="Senior"
             />
           </div>
           <div className="col-span-full flex gap-2">
             <button
               type="submit"
-              className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+              className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
             >
               {editingId ? "Update" : "Add"} Player
             </button>
             <button
               type="button"
               onClick={() => { setShowForm(false); setEditingId(null); }}
-              className="bg-white/10 hover:bg-white/15 text-white px-6 py-2 rounded-lg text-sm transition-colors"
+              className="bg-white/[0.06] hover:bg-white/[0.10] text-white px-6 py-2 rounded text-sm transition-colors duration-150"
             >
               Cancel
             </button>
@@ -181,10 +181,10 @@ export default function PlayersPage() {
         </form>
       )}
 
-      <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] border border-white/[0.08] rounded-md overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[0.03]">
+            <tr className="border-b border-white/[0.08] bg-white/[0.02]">
               <th className="text-left text-xs font-medium text-white/40 px-4 py-3">#</th>
               <th className="text-left text-xs font-medium text-white/40 px-4 py-3">Name</th>
               <th className="text-left text-xs font-medium text-white/40 px-4 py-3">Pos</th>
@@ -198,7 +198,7 @@ export default function PlayersPage() {
             {players.map((player) => (
               <tr
                 key={player.id}
-                className="border-b border-white/[0.06] hover:bg-white/[0.04] transition-colors"
+                className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors duration-100"
               >
                 <td className="px-4 py-3 text-sm font-mono text-white/70">{player.number}</td>
                 <td className="px-4 py-3">

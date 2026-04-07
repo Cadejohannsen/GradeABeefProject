@@ -36,7 +36,7 @@ export default function LoginPage() {
 
         <button
           onClick={() => router.push("/signin")}
-          className="bg-white text-black font-semibold py-3 px-12 rounded-lg hover:bg-white/90 transition-colors text-sm"
+          className="bg-white text-black font-semibold py-3 px-12 rounded-sm hover:bg-white/90 transition-colors duration-150 text-sm"
         >
           Login
         </button>

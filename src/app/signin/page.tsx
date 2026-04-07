@@ -49,11 +49,11 @@ export default function SignInPage() {
 
       {/* Sign-in card */}
       <div className="relative z-10 w-full max-w-sm">
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl space-y-5">
+        <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.12] rounded-md p-8 shadow-2xl space-y-5">
           <h2 className="text-lg font-semibold text-white text-center">Sign in to your account</h2>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-sm text-sm">
               {error}
             </div>
           )}
@@ -67,7 +67,7 @@ export default function SignInPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                className="w-full bg-white/[0.08] border border-white/[0.12] rounded-sm px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-transparent transition"
                 placeholder="coach@team.com"
                 required
               />
@@ -81,7 +81,7 @@ export default function SignInPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition"
+                className="w-full bg-white/[0.08] border border-white/[0.12] rounded-sm px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-transparent transition"
                 placeholder="••••••••"
                 required
               />
@@ -90,7 +90,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-black font-semibold py-2.5 rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 text-sm mt-2"
+              className="w-full bg-white text-black font-semibold py-2.5 rounded-sm hover:bg-white/90 transition-colors duration-150 disabled:opacity-50 text-sm mt-2"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>

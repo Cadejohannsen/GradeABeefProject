@@ -29,6 +29,22 @@ export async function GET(
   return NextResponse.json(game);
 }
 
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const data = await req.json();
+  const game = await prisma.game.update({
+    where: { id: params.id },
+    data: {
+      opponent: data.opponent,
+      date: new Date(data.date),
+      weekNumber: data.weekNumber,
+    },
+  });
+  return NextResponse.json(game);
+}
+
 export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }

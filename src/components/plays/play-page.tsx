@@ -62,10 +62,10 @@ function Modal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative backdrop-blur-xl bg-white/[0.08] border border-white/15 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 z-10">
+      <div className="relative bg-[#1a1a1a] border border-white/[0.10] rounded-md shadow-2xl w-full max-w-lg mx-4 p-6 z-10">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-white">{title}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors duration-150">
             <X size={20} />
           </button>
         </div>
@@ -222,14 +222,14 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
       <div>
         <button
           onClick={() => setSelectedPlay(null)}
-          className="flex items-center gap-2 text-sm text-white/40 hover:text-white mb-4 transition-colors"
+          className="flex items-center gap-2 text-sm text-white/40 hover:text-white mb-4 transition-colors duration-150"
         >
           <ArrowLeft size={16} />
           Back to {title}
         </button>
 
-        <div className="backdrop-blur-md bg-white/[0.04] rounded-2xl p-6 border border-white/10 mb-6">
-          <h1 className="text-2xl font-bold text-white">{selectedPlay.name}</h1>
+        <div className="bg-white/[0.04] rounded-md p-6 border border-white/[0.08] mb-6">
+          <h1 className="text-4xl font-bold text-white">{selectedPlay.name}</h1>
           <div className="flex items-center gap-3 mt-2 text-sm text-white/40">
             <span>Formation: <span className="text-white/70">{selectedPlay.formation.name}</span></span>
             <span>·</span>
@@ -249,12 +249,12 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             value={newCallName}
             onChange={(e) => setNewCallName(e.target.value)}
             placeholder="Type a play name (e.g. Washington, Wizards)..."
-            className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none placeholder:text-white/30"
+            className="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none placeholder:text-white/30"
             autoFocus
           />
           <button
             type="submit"
-            className="bg-primary-500 text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2"
+            className="bg-primary-500 text-white px-6 py-3 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150 flex items-center gap-2"
           >
             <Plus size={16} />
             Add
@@ -266,7 +266,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
           {selectedPlay.playCalls.map((call) => (
             <div
               key={call.id}
-              className="flex items-center justify-between backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl px-5 py-4 hover:border-white/25 transition-colors"
+              className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-md px-5 py-3.5 hover:border-white/[0.15] transition-colors duration-150"
             >
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary-400" />
@@ -281,7 +281,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             </div>
           ))}
           {selectedPlay.playCalls.length === 0 && (
-            <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-8 text-center">
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-md p-8 text-center">
               <p className="text-sm text-white/40">
                 No play names yet. Type one above and click Add.
               </p>
@@ -299,7 +299,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
         <div className="flex items-center gap-3">
           {icon}
           <div>
-            <h1 className="text-2xl font-bold text-white">{title}</h1>
+            <h1 className="text-4xl font-bold text-white">{title}</h1>
             <p className="text-sm text-white/40">
               {plays.length} play concept{plays.length !== 1 ? "s" : ""} · {formations.length} formation{formations.length !== 1 ? "s" : ""}
             </p>
@@ -316,7 +316,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             setShowPlayModal(true);
           }}
           disabled={formations.length === 0}
-          className="flex items-center gap-2 bg-primary-500 text-white disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+          className="flex items-center gap-2 bg-primary-500 text-white disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
         >
           <Plus size={16} />
           Add Play
@@ -324,7 +324,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
       </div>
 
       {/* Filters */}
-      <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3 flex-wrap">
+      <div className="bg-white/[0.04] border border-white/[0.08] rounded-md px-4 py-3 mb-6 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <label className="text-xs text-white/40">Formation</label>
           <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                 }
                 setActiveFormation(next);
               }}
-              className="bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none min-w-[220px]"
+              className="bg-white/[0.06] border border-white/[0.08] rounded-sm px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none min-w-[220px]"
             >
               <option value="all">All Formations</option>
               {formations.map((f) => (
@@ -356,7 +356,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                   if (!ok) return;
                   handleDeleteFormation(activeFormation);
                 }}
-                className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-white/10 bg-white/[0.06] text-white/40 hover:text-red-400 hover:border-red-400/30 transition-colors"
+                className="inline-flex items-center justify-center w-9 h-9 rounded border border-white/[0.08] bg-white/[0.06] text-white/40 hover:text-red-400 hover:border-red-400/30 transition-colors duration-150"
                 title="Delete selected formation"
                 type="button"
               >
@@ -369,19 +369,19 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
 
       {/* Plays Grid */}
       {formations.length === 0 ? (
-        <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-12 text-center">
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-md p-12 text-center">
           <p className="text-white/40 text-sm mb-4">
             Add a formation first to start building your playbook.
           </p>
           <button
             onClick={() => setShowFormationModal(true)}
-            className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+            className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
           >
             Add Formation
           </button>
         </div>
       ) : plays.length === 0 ? (
-        <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-12 text-center">
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-md p-12 text-center">
           <p className="text-white/40 text-sm mb-4">
             No play concepts yet. Add one to get started.
           </p>
@@ -395,7 +395,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
               });
               setShowPlayModal(true);
             }}
-            className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+            className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
           >
             Add Play
           </button>
@@ -406,7 +406,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             <div
               key={play.id}
               onClick={() => setSelectedPlay(play)}
-              className="group backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-5 cursor-pointer hover:border-primary-400/40 hover:shadow-lg hover:shadow-primary-500/10 transition-all"
+              className="group bg-white/[0.04] border border-white/[0.08] rounded-md p-5 cursor-pointer hover:border-primary-400/30 hover:bg-white/[0.06] transition-all duration-150"
             >
               <div className="flex items-start justify-between mb-3">
                 <h3 className="text-base font-semibold text-white group-hover:text-primary-300 transition-colors">
@@ -418,16 +418,16 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs bg-primary-500/15 text-primary-300 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-primary-500/15 text-primary-300 px-2 py-0.5 rounded-sm">
                   {play.formation.name}
                 </span>
                 {play.down !== "any" && (
-                  <span className="text-xs bg-white/10 text-white/60 px-2 py-0.5 rounded-full border border-white/10">
+                  <span className="text-xs bg-white/[0.08] text-white/60 px-2 py-0.5 rounded-sm border border-white/[0.08]">
                     {play.down}
                   </span>
                 )}
                 {play.distance !== "any" && (
-                  <span className="text-xs bg-white/[0.06] text-white/40 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-white/[0.06] text-white/40 px-2 py-0.5 rounded-sm">
                     {distanceLabel(play.distance)}
                   </span>
                 )}
@@ -446,7 +446,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
               </div>
 
               {play.playCalls.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+                <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap gap-1.5">
                   {play.playCalls.slice(0, 5).map((call) => (
                     <span key={call.id} className="text-xs bg-white/[0.06] text-white/70 px-2 py-1 rounded">
                       {call.name}
@@ -473,7 +473,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             value={newFormationName}
             onChange={(e) => setNewFormationName(e.target.value)}
             placeholder="e.g. Ace, Trips, Deuce, I-Form..."
-            className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none mb-5"
+            className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none mb-5"
             autoFocus
             required
           />
@@ -481,13 +481,13 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             <button
               type="button"
               onClick={() => setShowFormationModal(false)}
-              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors"
+              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors duration-150"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+              className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
             >
               Add Formation
             </button>
@@ -508,7 +508,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                 value={playForm.name}
                 onChange={(e) => setPlayForm({ ...playForm, name: e.target.value })}
                 placeholder="e.g. Outside Zone, Inside Zone, Power, Counter..."
-                className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
                 autoFocus
                 required
               />
@@ -520,7 +520,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                 <select
                   value={playForm.down}
                   onChange={(e) => setPlayForm({ ...playForm, down: e.target.value })}
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+                  className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
                 >
                   {DOWNS.map((d) => (
                     <option key={d} value={d}>{d === "any" ? "Any Down" : d}</option>
@@ -532,7 +532,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                 <select
                   value={playForm.distance}
                   onChange={(e) => setPlayForm({ ...playForm, distance: e.target.value })}
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+                  className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
                 >
                   {DISTANCES.map((d) => (
                     <option key={d} value={d}>{distanceLabel(d)}</option>
@@ -554,7 +554,7 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
                   }
                   setPlayForm({ ...playForm, formationId: next });
                 }}
-                className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:ring-2 focus:ring-white/30 focus:outline-none"
+                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-sm px-4 py-3 text-sm text-white focus:ring-1 focus:ring-white/20 focus:outline-none"
               >
                 <option value="" disabled>
                   Select a formation...
@@ -571,13 +571,13 @@ export function PlayPage({ category, title, icon }: PlayPageProps) {
             <button
               type="button"
               onClick={() => setShowPlayModal(false)}
-              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors"
+              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors duration-150"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-primary-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
+              className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150"
             >
               Add Play
             </button>

@@ -13,6 +13,10 @@ export async function PUT(
     data: {
       playName: data.playName,
       playType: data.playType ?? undefined,
+      scheme: data.scheme ?? undefined,
+      te: data.te ?? undefined,
+      xtkl: data.xtkl ?? undefined,
+      xtkl2: data.xtkl2 ?? undefined,
       comment: data.comment ?? undefined,
     },
   });

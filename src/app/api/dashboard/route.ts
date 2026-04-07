@@ -9,15 +9,15 @@ export async function GET() {
   // Players
   const players = await prisma.player.findMany({
     where: { coachId },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, number: true, position: true },
+    orderBy: { number: "asc" },
+    select: { id: true, name: true, number: true, position: true, height: true, weight: true, year: true },
   });
 
-  // Games
+  // Games (with snap count)
   const games = await prisma.game.findMany({
     where: { season: { coachId } },
-    orderBy: { weekNumber: "desc" },
-    select: { id: true, opponent: true, weekNumber: true, date: true },
+    orderBy: { weekNumber: "asc" },
+    select: { id: true, opponent: true, weekNumber: true, date: true, _count: { select: { snaps: true } } },
   });
 
   // All snap grades for this coach's players
@@ -40,15 +40,24 @@ export async function GET() {
   const topJob  = topPerformer(playerStats, "jobPct");
   const topTech = topPerformer(playerStats, "techPct");
 
+  // Sorted leaderboards
+  const byJob = [...playerStats].filter((p) => p.snaps > 0).sort((a, b) => b.jobPct - a.jobPct);
+  const byTech = [...playerStats].filter((p) => p.snaps > 0).sort((a, b) => b.techPct - a.techPct);
+  const byFinal = [...playerStats].filter((p) => p.snaps > 0).sort((a, b) => b.finalPct - a.finalPct);
+
   return NextResponse.json({
     playerCount: players.length,
-    players: players.slice(0, 5),
+    playerStats,
+    games: games.map((g) => ({ ...g, snapCount: g._count.snaps })),
     gameCount: games.length,
-    recentGame: games[0] ?? null,
+    recentGame: games[games.length - 1] ?? null,
     teamJobAvg,
     teamTechAvg,
     teamFinalAvg,
     topJob,
     topTech,
+    byJob,
+    byTech,
+    byFinal,
   });
 }

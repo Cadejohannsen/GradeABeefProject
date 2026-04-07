@@ -66,6 +66,10 @@ model GameSnap {
   snapNumber Int
   playName   String
   playType   String      @default("run") // "run", "pass", "draw-screen"
+  scheme     String      @default("")
+  te         Int         @default(0)
+  xtkl       Int         @default(0)
+  xtkl2      Int         @default(0)
   comment    String      @default("")
   createdAt  DateTime    @default(now())
   grades     SnapGrade[]
