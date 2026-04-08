@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { findUniqueByEmail, type Coach } from "@/lib/json-db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,9 +14,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const coach = await prisma.coach.findUnique({
-          where: { email: credentials.email },
-        });
+        const coach: Coach | null = findUniqueByEmail("coaches", credentials.email);
 
         if (!coach) return null;
 

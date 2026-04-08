@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { remove } from "@/lib/json-db";
 
 export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  await prisma.formation.delete({ where: { id: params.id } });
-  return NextResponse.json({ ok: true });
+  const success = remove("formations", params.id);
+  return NextResponse.json({ ok: success });
 }

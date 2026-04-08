@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { findMany, create, type Formation, type CreateFormation } from "@/lib/json-db";
 import { getCoachId } from "@/lib/dev-auth";
 
 function toTitleCase(value: string) {
@@ -16,15 +16,13 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const _category = searchParams.get("category");
 
-  const formations = await prisma.formation.findMany({
-    where: {
-      coachId,
-    },
-    include: { plays: { orderBy: { createdAt: "asc" } } },
-    orderBy: { name: "asc" },
-  });
+  const formations = findMany<Formation>("formations", { coachId })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  return NextResponse.json(formations);
+  // TODO: Add plays relation when we implement plays API
+  const formationsWithPlays = formations.map(f => ({ ...f, plays: [] }));
+
+  return NextResponse.json(formationsWithPlays);
 }
 
 export async function POST(req: Request) {
@@ -42,9 +40,11 @@ export async function POST(req: Request) {
 
   const normalizedCategory = typeof category === "string" && category.trim() ? category.trim() : "all";
 
-  const formation = await prisma.formation.create({
-    data: { coachId, name: formattedName, category: normalizedCategory },
-  });
+  const formation = create<CreateFormation>("formations", {
+    coachId,
+    name: formattedName,
+    category: normalizedCategory,
+  }) as Formation;
 
   return NextResponse.json(formation);
 }
