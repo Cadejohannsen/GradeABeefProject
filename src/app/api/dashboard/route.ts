@@ -3,8 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { getCoachId } from "@/lib/dev-auth";
 import { calcGradeStats, teamAvg, topPerformer } from "@/lib/grading";
 
-export async function GET() {
+export async function GET(request: Request) {
   const coachId = await getCoachId();
+  const { searchParams } = new URL(request.url);
+  const year = searchParams.get("year");
+
+  // Require year parameter
+  if (!year) {
+    return NextResponse.json({ error: "Year parameter is required" }, { status: 400 });
+  }
+
+  // Find the season for the given year
+  const season = await prisma.season.findFirst({
+    where: { 
+      coachId,
+      name: year 
+    },
+  });
 
   // Players
   const players = await prisma.player.findMany({
@@ -13,16 +28,27 @@ export async function GET() {
     select: { id: true, name: true, number: true, position: true, height: true, weight: true, year: true },
   });
 
-  // Games (with snap count)
+  // Games (with snap count) - filtered by season
   const games = await prisma.game.findMany({
-    where: { season: { coachId } },
+    where: { 
+      seasonId: season?.id || "",
+      season: { coachId }
+    },
     orderBy: { weekNumber: "asc" },
     select: { id: true, opponent: true, weekNumber: true, date: true, _count: { select: { snaps: true } } },
   });
 
-  // All snap grades for this coach's players
+  // All snap grades for this coach's players in the selected season
   const allGrades = await prisma.snapGrade.findMany({
-    where: { player: { coachId } },
+    where: { 
+      player: { coachId },
+      snap: { 
+        game: { 
+          seasonId: season?.id || "",
+          season: { coachId }
+        }
+      }
+    },
     select: { playerId: true, value: true },
   });
 

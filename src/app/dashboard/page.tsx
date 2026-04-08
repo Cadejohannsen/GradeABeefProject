@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Users,
   FileText,
@@ -65,6 +66,16 @@ function pctBg(pct: number | null): string {
 }
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const year = searchParams.get("year");
+  
+  // If no year is provided, redirect to select-year page
+  if (!year) {
+    router.push("/select-year");
+    return null;
+  }
+  
   const [data, setData] = useState<DashboardData | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [bannerFit, setBannerFit] = useState<string>("cover");
@@ -80,7 +91,7 @@ export default function DashboardPage() {
   const [editorHeight, setEditorHeight] = useState(192);
 
   useEffect(() => {
-    fetch("/api/dashboard")
+    fetch(`/api/dashboard?year=${year}`)
       .then((r) => r.json())
       .then(setData)
       .catch(() => {});
@@ -92,7 +103,7 @@ export default function DashboardPage() {
     if (savedFit) setBannerFit(savedFit);
     if (savedPos) setBannerPos(savedPos);
     if (savedHeight) setBannerHeight(parseInt(savedHeight));
-  }, []);
+  }, [year]);
 
   function openEditor() {
     setEditorUrl(bannerUrl);
@@ -277,17 +288,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6 pt-12">
-                <h1 className="text-5xl font-bold text-white">Dashboard</h1>
+                <h1 className="text-5xl font-bold text-white">{year} Dashboard</h1>
                 <p className="text-white/60 mt-2">
-                  Welcome back, Coach. Here&apos;s your team overview.
+                  Welcome back, Coach. Here&apos;s your {year} season overview.
                 </p>
               </div>
             </>
           ) : (
             <div className="h-48 bg-white/[0.04] flex flex-col items-center justify-center group-hover:bg-white/[0.06] transition-colors duration-150">
-              <h1 className="text-5xl font-bold text-white text-center">Dashboard</h1>
+              <h1 className="text-5xl font-bold text-white text-center">{year} Dashboard</h1>
               <p className="text-white/40 mt-2 text-center">
-                Welcome back, Coach. Here&apos;s your team overview.
+                Welcome back, Coach. Here&apos;s your {year} season overview.
               </p>
             </div>
           )}

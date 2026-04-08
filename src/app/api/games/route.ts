@@ -2,19 +2,31 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCoachId } from "@/lib/dev-auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   const coachId = await getCoachId();
+  const { searchParams } = new URL(request.url);
+  const year = searchParams.get("year");
 
-  // Auto-create a default season if none exists
-  let season = await prisma.season.findFirst({ where: { coachId } });
+  // Require year parameter
+  if (!year) {
+    return NextResponse.json({ error: "Year parameter is required" }, { status: 400 });
+  }
+
+  // Find the season for the given year
+  const season = await prisma.season.findFirst({
+    where: { 
+      coachId,
+      name: year 
+    },
+  });
+
+  // If no season exists for this year, return empty array
   if (!season) {
-    season = await prisma.season.create({
-      data: { name: "2025 Season", coachId },
-    });
+    return NextResponse.json([]);
   }
 
   const games = await prisma.game.findMany({
-    where: { season: { coachId } },
+    where: { seasonId: season.id },
     orderBy: { weekNumber: "asc" },
   });
 
@@ -24,12 +36,19 @@ export async function GET() {
 export async function POST(req: Request) {
   const coachId = await getCoachId();
   const data = await req.json();
+  const year = data.year || new Date().getFullYear().toString();
 
-  // Auto-create a default season if none exists
-  let season = await prisma.season.findFirst({ where: { coachId } });
+  // Find the season for the given year, or create it if it doesn't exist
+  let season = await prisma.season.findFirst({
+    where: { 
+      coachId,
+      name: year 
+    },
+  });
+
   if (!season) {
     season = await prisma.season.create({
-      data: { name: "2025 Season", coachId },
+      data: { name: year, coachId },
     });
   }
 

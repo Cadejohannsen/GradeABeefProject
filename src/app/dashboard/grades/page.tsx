@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Trash2, X, Star, ChevronDown, Pencil } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 /* ── types ─────────────────────────────────────────── */
 interface Player {
@@ -100,6 +101,16 @@ function isTechPositive(v: number) { return v === 4 || v === 2; }
 
 /* ── main page ─────────────────────────────────────── */
 export default function GradesPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const year = searchParams.get("year");
+  
+  // If no year is provided, redirect to select-year page
+  if (!year) {
+    router.push("/select-year");
+    return null;
+  }
+  
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
@@ -154,16 +165,16 @@ export default function GradesPage() {
   }, []);
 
   const fetchGames = useCallback(async () => {
-    const res = await fetch("/api/games");
+    const res = await fetch(`/api/games?year=${year}`);
     if (res.ok) setGames(await res.json());
-  }, []);
+  }, [year]);
 
   const fetchGameData = useCallback(async (gameId: string) => {
     const res = await fetch(`/api/games/${gameId}`);
     if (res.ok) setGameData(await res.json());
   }, []);
 
-  useEffect(() => { fetchPlayers(); fetchGames(); }, [fetchPlayers, fetchGames]);
+  useEffect(() => { fetchPlayers(); fetchGames(); }, [fetchPlayers, fetchGames, year]);
 
   useEffect(() => {
     if (selectedGameId) {
@@ -233,7 +244,7 @@ export default function GradesPage() {
     const res = await fetch("/api/games", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newGame),
+      body: JSON.stringify({ ...newGame, year }),
     });
     if (res.ok) {
       const created = await res.json();
@@ -257,6 +268,20 @@ export default function GradesPage() {
       setShowEditGame(false);
       await fetchGames();
       if (selectedGameId === editGame.id) await fetchGameData(editGame.id);
+    }
+  }
+
+  async function handleDeleteGame() {
+    if (!editGame.id) return;
+    const res = await fetch(`/api/games/${editGame.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setShowEditGame(false);
+      await fetchGames();
+      // If the deleted game was selected, clear the selection
+      if (selectedGameId === editGame.id) {
+        setSelectedGameId(null);
+        setGameData(null);
+      }
     }
   }
 
@@ -1018,11 +1043,21 @@ export default function GradesPage() {
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3 mt-2">
-            <button type="button" onClick={() => setShowEditGame(false)}
-              className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors duration-150">Cancel</button>
-            <button type="submit"
-              className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150">Save Changes</button>
+          <div className="flex justify-between items-center mt-2">
+            <button
+              type="button"
+              onClick={handleDeleteGame}
+              className="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-2"
+            >
+              <Trash2 size={14} />
+              Delete Game
+            </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowEditGame(false)}
+                className="px-5 py-2 text-sm text-white/40 hover:text-white transition-colors duration-150">Cancel</button>
+              <button type="submit"
+                className="bg-primary-500 text-white px-6 py-2 rounded text-sm font-semibold hover:bg-primary-600 transition-colors duration-150">Save Changes</button>
+            </div>
           </div>
         </form>
       </Modal>

@@ -27,7 +27,7 @@ export default function SignInPage() {
       setError("Invalid email or password");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push("/select-year");
     }
   }
 
@@ -111,7 +111,7 @@ export default function SignInPage() {
           &larr; Back
         </button>
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/select-year")}
           className="w-full text-xs text-white/30 hover:text-white/60 py-2 transition-colors"
         >
           Skip for now &rarr;
