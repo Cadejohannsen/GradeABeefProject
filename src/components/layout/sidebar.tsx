@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -12,8 +12,10 @@ import {
   Shuffle,
   LogOut,
   User,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/components/providers/settings-provider";
 
 const navItems = [
   { href: "/dashboard", label: "Dash", icon: LayoutDashboard },
@@ -27,13 +29,18 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const year = searchParams.get("year");
   const { data: session } = useSession();
+  const { settings } = useSettings();
+
+  const withYear = (href: string) => year ? `${href}?year=${year}` : href;
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[200px] bg-[#111111] flex flex-col border-r border-white/[0.08] z-50">
       <div className="p-5 border-b border-white/[0.08]">
         <h1 className="text-base font-bold text-primary-300 tracking-tight">
-          Grade-A-Beef
+          {settings.teamName || "Grade-A-Beef"}
         </h1>
         <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Lineman Tracker</p>
       </div>
@@ -48,7 +55,7 @@ export function Sidebar() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={withYear(item.href)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-all duration-150",
                 isActive
@@ -63,11 +70,31 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Settings — above profile */}
+      <div className="px-3 pb-2">
+        <Link
+          href={withYear("/dashboard/settings")}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-all duration-150",
+            pathname === "/dashboard/settings"
+              ? "bg-white/[0.06] text-white border-l-2 border-primary-400"
+              : "text-white/50 hover:bg-primary-500/10 hover:text-white/80"
+          )}
+        >
+          <Settings size={18} />
+          <span>Settings</span>
+        </Link>
+      </div>
+
       <div className="p-4 border-t border-white/[0.08]">
         <div className="flex items-center gap-2.5 px-1 py-2">
-          <div className="w-8 h-8 rounded bg-primary-700 flex items-center justify-center">
-            <User size={14} className="text-primary-200" />
-          </div>
+          {settings.logoDataUrl ? (
+            <img src={settings.logoDataUrl} alt="Team logo" className="w-8 h-8 rounded object-contain bg-white/5" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-primary-700 flex items-center justify-center">
+              <User size={14} className="text-primary-200" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-white/80 truncate">
               {session?.user?.name || "Coach"}

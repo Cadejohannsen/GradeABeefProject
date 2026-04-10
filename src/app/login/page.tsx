@@ -1,9 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSettings } from "@/components/providers/settings-provider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { settings } = useSettings();
+  const logoSrc = settings.logoDataUrl || "/logo.png";
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -23,8 +26,8 @@ export default function LoginPage() {
 
       {/* Large logo behind content */}
       <img
-        src="/logo.png"
-        alt="Linfield Wildcats"
+        src={logoSrc}
+        alt={settings.teamName || "Team Logo"}
         className="absolute z-10 object-contain drop-shadow-2xl pointer-events-none"
         style={{ width: "900px", height: "900px", top: "50%", left: "50%", transform: "translate(-50%, -62%)" }}
       />

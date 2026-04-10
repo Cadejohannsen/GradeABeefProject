@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default primary color palette (Linfield purple: #2D1B4E)
+   Format: space-separated RGB channels for Tailwind opacity support */
+:root {
+  --cp-50:  232 221 242;
+  --cp-100: 197 179 219;
+  --cp-200: 155 126 196;
+  --cp-300: 123  93 170;
+  --cp-400:  92  61 143;
+  --cp-500:  45  27  78;
+  --cp-600:  37  23  69;
+  --cp-700:  30  18  58;
+  --cp-800:  22  13  46;
+  --cp-900:  15  10  32;
+  --cp: var(--cp-500);
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -10,6 +10,8 @@ export interface Coach {
   email: string;
   passwordHash: string;
   teamName: string;
+  primaryColor?: string;
+  logoDataUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
