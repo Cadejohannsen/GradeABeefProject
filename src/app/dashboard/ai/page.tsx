@@ -82,8 +82,8 @@ export default function AiPage() {
         ...prev,
         { role: "assistant", content: data.content, executed: data.executed },
       ]);
-    } catch {
-      setError("Network error — check your connection");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error — check your connection");
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
@@ -108,7 +108,7 @@ export default function AiPage() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-white">AI Assistant</h1>
-            <p className="text-[11px] text-white/30">{year} season · Gemma 3 27B</p>
+            <p className="text-[11px] text-white/30">{year} season · Nvidia Nemotron 120B</p>
           </div>
         </div>
         {messages.length > 0 && (

@@ -6,7 +6,7 @@ import { generatePalette } from "@/lib/color-palette";
 import { removeBackground } from "@/lib/remove-bg";
 import {
   Upload, X, Check, RotateCcw, Palette, Image as ImageIcon, Tag,
-  Eraser, Sliders, Undo2, Loader2,
+  Eraser, Sliders, Undo2, Loader2, Sun, Moon,
 } from "lucide-react";
 
 const DEFAULT_COLOR = "#2D1B4E";
@@ -149,6 +149,53 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold text-white">App Settings</h1>
         <p className="text-white/40 text-sm mt-1">Customize branding for your program</p>
       </div>
+
+      {/* ── Appearance ──────────────────────────────────────── */}
+      <section className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          {settings.lightMode ? (
+            <Sun size={16} className="text-white/50" />
+          ) : (
+            <Moon size={16} className="text-white/50" />
+          )}
+          <h2 className="text-base font-semibold text-white/80">Appearance</h2>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-white/70">
+              {settings.lightMode ? "Light Mode" : "Dark Mode"}
+            </p>
+            <p className="text-xs text-white/30 mt-0.5">
+              {settings.lightMode
+                ? "Switch back to the dark interface"
+                : "Switch to a light, minimal interface"}
+            </p>
+          </div>
+
+          {/* Toggle switch */}
+          <button
+            onClick={() => updateSettings({ lightMode: !settings.lightMode })}
+            className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/50 ${
+              settings.lightMode
+                ? "bg-primary-500"
+                : "bg-white/[0.12]"
+            }`}
+            role="switch"
+            aria-checked={settings.lightMode}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                settings.lightMode ? "translate-x-6" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+
+        <p className="text-white/20 text-xs mt-4">
+          Your preference is saved locally in this browser.
+        </p>
+      </section>
 
       {/* ── Team Name ─────────────────────────────────────── */}
       <section className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6 space-y-4">

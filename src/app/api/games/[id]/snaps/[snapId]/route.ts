@@ -1,5 +1,17 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  findUnique,
+  findMany,
+  findFirst,
+  update,
+  remove,
+  create,
+  cuid,
+  removeWhere,
+  type GameSnap,
+  type SnapGrade,
+  type Player,
+} from "@/lib/json-db";
 
 export async function PUT(
   req: Request,
@@ -8,17 +20,14 @@ export async function PUT(
   const data = await req.json();
 
   // Update snap info
-  await prisma.gameSnap.update({
-    where: { id: params.snapId },
-    data: {
-      playName: data.playName,
-      playType: data.playType ?? undefined,
-      scheme: data.scheme ?? undefined,
-      te: data.te ?? undefined,
-      xtkl: data.xtkl ?? undefined,
-      xtkl2: data.xtkl2 ?? undefined,
-      comment: data.comment ?? undefined,
-    },
+  update<GameSnap>("gameSnaps", params.snapId, {
+    playName: data.playName,
+    ...(data.playType !== undefined && { playType: data.playType }),
+    ...(data.scheme !== undefined && { scheme: data.scheme }),
+    ...(data.te !== undefined && { te: data.te }),
+    ...(data.xtkl !== undefined && { xtkl: data.xtkl }),
+    ...(data.xtkl2 !== undefined && { xtkl2: data.xtkl2 }),
+    ...(data.comment !== undefined && { comment: data.comment }),
   });
 
   // Upsert grades
@@ -26,44 +35,44 @@ export async function PUT(
     for (const g of data.grades) {
       if (!g.playerId) continue;
 
-      const existing = await prisma.snapGrade.findFirst({
-        where: { snapId: params.snapId, playerId: g.playerId },
+      const existing = findFirst<SnapGrade>("snapGrades", {
+        snapId: params.snapId,
+        playerId: g.playerId,
       });
 
       if (g.value === null || g.value === undefined || g.value === 0) {
-        // Delete grade if cleared
-        if (existing) {
-          await prisma.snapGrade.delete({ where: { id: existing.id } });
-        }
+        if (existing) remove("snapGrades", existing.id);
       } else if (existing) {
-        await prisma.snapGrade.update({
-          where: { id: existing.id },
-          data: { value: g.value },
-        });
+        update<SnapGrade>("snapGrades", existing.id, { value: g.value });
       } else {
-        await prisma.snapGrade.create({
-          data: {
-            snapId: params.snapId,
-            playerId: g.playerId,
-            value: g.value,
-          },
+        create<SnapGrade>("snapGrades", {
+          id: cuid(),
+          snapId: params.snapId,
+          playerId: g.playerId,
+          value: g.value,
         });
       }
     }
   }
 
-  const updated = await prisma.gameSnap.findUnique({
-    where: { id: params.snapId },
-    include: { grades: { include: { player: true } } },
-  });
+  const snap = findUnique<GameSnap>("gameSnaps", params.snapId);
+  const grades = findMany<SnapGrade>("snapGrades", { snapId: params.snapId });
+  const players = findMany<Player>("players");
 
-  return NextResponse.json(updated);
+  return NextResponse.json({
+    ...snap,
+    grades: grades.map((g) => ({
+      ...g,
+      player: players.find((p) => p.id === g.playerId),
+    })),
+  });
 }
 
 export async function DELETE(
   _req: Request,
   { params }: { params: { id: string; snapId: string } }
 ) {
-  await prisma.gameSnap.delete({ where: { id: params.snapId } });
+  removeWhere<SnapGrade>("snapGrades", "snapId", params.snapId);
+  remove("gameSnaps", params.snapId);
   return NextResponse.json({ ok: true });
 }

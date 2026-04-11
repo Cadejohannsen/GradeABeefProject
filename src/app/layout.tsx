@@ -22,6 +22,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        {/* Anti-flash: apply saved theme class before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('gab-light-mode');if(m==='true'){document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={`${bebasNeue.variable} ${inter.variable} font-inter`}>
         <AuthProvider>
           <SettingsProvider>{children}</SettingsProvider>

@@ -2,8 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Default primary color palette (Linfield purple: #2D1B4E)
-   Format: space-separated RGB channels for Tailwind opacity support */
+/* ══════════════════════════════════════════
+   PRIMARY COLOR PALETTE — dynamic via JS
+   Format: space-separated RGB channels
+══════════════════════════════════════════ */
 :root {
   --cp-50:  232 221 242;
   --cp-100: 197 179 219;
@@ -18,65 +20,411 @@
   --cp: var(--cp-500);
 }
 
+/* ══════════════════════════════════════════
+   ADAPTIVE UI COLOR VARIABLES
+   Dark mode is the default (html.dark)
+   Light mode overrides via html:not(.dark)
+══════════════════════════════════════════ */
+:root {
+  --ui-bg:          9   9   9;    /* #090909 — main background */
+  --ui-surface:    17  17  17;    /* #111111 — elevated surfaces */
+  --ui-sidebar:    13  13  13;    /* #0d0d0d — sidebar */
+  --ui-fg:        240 240 240;    /* #f0f0f0 — primary text */
+  --ui-fg2:       136 136 136;    /* #888888 — secondary text */
+  /* Channels used with opacity (white in dark, black in light) */
+  --ui-ch:     255 255 255;
+}
+
+html:not(.dark) {
+  --ui-bg:        228 228 233;   /* #e4e4e9 — soft blue-gray, not harsh white */
+  --ui-surface:   242 242 246;   /* #f2f2f6 — slightly lighter cards */
+  --ui-sidebar:   236 236 241;   /* #ececf1 — distinct sidebar */
+  --ui-fg:          9   9  11;   /* #09090b */
+  --ui-fg2:        60  60  70;   /* #3c3c46 — darker secondary text */
+  --ui-ch:       0   0   0;      /* flip to black */
+}
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    background-color: rgb(var(--ui-bg));
+    color: rgb(var(--ui-fg));
+    @apply antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
   html {
     @apply scroll-smooth;
   }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-bebas), sans-serif;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
   }
-  h1 { font-size: 2.2rem; }
-  h2 { font-size: 1.7rem; }
-  h3 { font-size: 1.3rem; }
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 1.9rem; }
+  h3 { font-size: 1.4rem; }
+
   button {
-    font-family: var(--font-bebas), sans-serif;
-    letter-spacing: 0.1em;
-    font-size: 1.15em;
+    font-family: var(--font-inter), sans-serif;
+    letter-spacing: 0;
+    font-size: 0.875rem;
   }
-  th, label {
-    font-family: var(--font-bebas), sans-serif;
-    letter-spacing: 0.08em;
-    font-size: 1.05em;
+  th {
+    font-family: var(--font-inter), sans-serif;
+    letter-spacing: 0.07em;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
   }
-  td {
-    font-size: 0.95rem;
+  label {
+    font-family: var(--font-inter), sans-serif;
+    letter-spacing: 0;
+    font-size: 0.8125rem;
   }
-  p, span, a {
-    font-size: 1rem;
+  td, p, span, a {
+    font-size: 0.875rem;
   }
 }
 
-/* Smooth focus ring */
+@layer components {
+  /* ── Grade badges ── */
+  .grade-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono border;
+  }
+  .grade-badge-good  { @apply grade-badge bg-emerald-500/10 text-emerald-400 border-emerald-500/15; }
+  .grade-badge-mid   { @apply grade-badge bg-yellow-500/10 text-yellow-400 border-yellow-500/15; }
+  .grade-badge-low   { @apply grade-badge bg-red-500/10 text-red-400 border-red-500/15; }
+  .grade-badge-empty { @apply grade-badge bg-white/[0.04] text-white/25 border-white/[0.06]; }
+
+  /* ── Cards ── */
+  .card {
+    background-color: rgb(var(--ui-ch) / 0.03);
+    border: 1px solid rgb(var(--ui-ch) / 0.08);
+    border-radius: 0.75rem;
+  }
+  .card-hover {
+    background-color: rgb(var(--ui-ch) / 0.03);
+    border: 1px solid rgb(var(--ui-ch) / 0.08);
+    border-radius: 0.75rem;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .card-hover:hover {
+    background-color: rgb(var(--ui-ch) / 0.05);
+    border-color: rgb(var(--cp-500) / 0.20);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgb(var(--ui-ch) / 0.06);
+  }
+
+  /* ── Icon blocks ── */
+  .icon-block {
+    @apply w-7 h-7 rounded-lg bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
+  }
+  .icon-block-lg {
+    @apply w-9 h-9 rounded-xl bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
+  }
+
+  /* ── Inputs ── */
+  .input-field {
+    width: 100%;
+    background-color: rgb(var(--ui-ch) / 0.05);
+    border: 1px solid rgb(var(--ui-ch) / 0.08);
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: rgb(var(--ui-fg));
+    font-family: var(--font-inter), sans-serif;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .input-field::placeholder {
+    color: rgb(var(--ui-ch) / 0.25);
+  }
+  .input-field:focus {
+    border-color: rgb(var(--cp-400) / 0.40);
+    box-shadow: 0 0 0 3px rgb(var(--cp-400) / 0.10);
+  }
+  .select-field {
+    width: 100%;
+    background-color: rgb(var(--ui-ch) / 0.05);
+    border: 1px solid rgb(var(--ui-ch) / 0.08);
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: rgb(var(--ui-fg));
+    font-family: var(--font-inter), sans-serif;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .select-field:focus {
+    border-color: rgb(var(--cp-400) / 0.40);
+    box-shadow: 0 0 0 3px rgb(var(--cp-400) / 0.10);
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed font-inter;
+  }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgb(var(--ui-ch) / 0.06);
+    color: rgb(var(--ui-fg) / 0.7);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.08);
+    transition: background-color 0.15s, color 0.15s;
+    font-family: var(--font-inter), sans-serif;
+    cursor: pointer;
+  }
+  .btn-secondary:hover {
+    background-color: rgb(var(--ui-ch) / 0.10);
+    color: rgb(var(--ui-fg));
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgb(var(--ui-fg) / 0.4);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.15s, color 0.15s;
+    font-family: var(--font-inter), sans-serif;
+    cursor: pointer;
+  }
+  .btn-ghost:hover {
+    background-color: rgb(var(--ui-ch) / 0.05);
+    color: rgb(var(--ui-fg) / 0.7);
+  }
+  .btn-danger {
+    @apply flex items-center gap-2 text-red-400/70 hover:text-red-400 text-sm font-medium px-3 py-2 rounded-lg hover:bg-red-500/[0.08] transition-colors duration-150 font-inter;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgb(var(--ui-ch) / 0.25);
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  /* ── Metric card ── */
+  .metric-card {
+    background-color: rgb(var(--ui-ch) / 0.03);
+    border: 1px solid rgb(var(--ui-ch) / 0.07);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .metric-card:hover {
+    background-color: rgb(var(--ui-ch) / 0.05);
+    border-color: rgb(var(--ui-ch) / 0.11);
+  }
+}
+
+/* ══════════════════════════════════════════
+   LIGHT MODE — ADAPTIVE OVERRIDES
+   Invert white-based Tailwind utilities to
+   their dark-on-light equivalents.
+══════════════════════════════════════════ */
+html:not(.dark) {
+  color-scheme: light;
+}
+
+/* ── Text overrides ──
+   Light mode needs higher opacity than dark to maintain contrast.
+   Dark mode: white/40 = visible on near-black.
+   Light mode: black/40 on gray is nearly invisible — we boost each level. */
+html:not(.dark) [class~="text-white"]    { color: rgba(9, 9, 11, 1.00) !important; }
+html:not(.dark) [class~="text-white/90"] { color: rgba(9, 9, 11, 0.90) !important; }
+html:not(.dark) [class~="text-white/80"] { color: rgba(9, 9, 11, 0.82) !important; }
+html:not(.dark) [class~="text-white/75"] { color: rgba(9, 9, 11, 0.78) !important; }
+html:not(.dark) [class~="text-white/70"] { color: rgba(9, 9, 11, 0.74) !important; }
+html:not(.dark) [class~="text-white/60"] { color: rgba(9, 9, 11, 0.68) !important; }
+html:not(.dark) [class~="text-white/55"] { color: rgba(9, 9, 11, 0.64) !important; }
+html:not(.dark) [class~="text-white/50"] { color: rgba(9, 9, 11, 0.60) !important; }
+html:not(.dark) [class~="text-white/45"] { color: rgba(9, 9, 11, 0.57) !important; }
+html:not(.dark) [class~="text-white/40"] { color: rgba(9, 9, 11, 0.55) !important; }
+html:not(.dark) [class~="text-white/35"] { color: rgba(9, 9, 11, 0.52) !important; }
+html:not(.dark) [class~="text-white/30"] { color: rgba(9, 9, 11, 0.48) !important; }
+html:not(.dark) [class~="text-white/25"] { color: rgba(9, 9, 11, 0.44) !important; }
+html:not(.dark) [class~="text-white/20"] { color: rgba(9, 9, 11, 0.38) !important; }
+html:not(.dark) [class~="text-white/15"] { color: rgba(9, 9, 11, 0.32) !important; }
+html:not(.dark) [class~="text-white/10"] { color: rgba(9, 9, 11, 0.25) !important; }
+
+/* ── Component class overrides for light mode ── */
+/* section-label uses a CSS var that needs a direct boost */
+html:not(.dark) .section-label {
+  color: rgba(9, 9, 11, 0.52) !important;
+  font-weight: 700 !important;
+}
+/* ── Cards: white surface lifted above gray background ── */
+html:not(.dark) .card,
+html:not(.dark) .card-hover {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+html:not(.dark) .card-hover:hover {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgb(var(--cp-500) / 0.25) !important;
+}
+html:not(.dark) .metric-card {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+html:not(.dark) .metric-card:hover {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+html:not(.dark) .card-header {
+  border-bottom-color: rgba(0, 0, 0, 0.09) !important;
+}
+/* Inputs: white on gray */
+html:not(.dark) .input-field,
+html:not(.dark) .select-field {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: rgba(9, 9, 11, 1.0) !important;
+}
+html:not(.dark) .input-field::placeholder {
+  color: rgba(9, 9, 11, 0.38) !important;
+}
+/* btn-secondary in light mode */
+html:not(.dark) .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.70) !important;
+  border-color: rgba(0, 0, 0, 0.13) !important;
+  color: rgba(9, 9, 11, 0.72) !important;
+}
+html:not(.dark) .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  color: rgba(9, 9, 11, 0.92) !important;
+}
+html:not(.dark) .btn-ghost {
+  color: rgba(9, 9, 11, 0.52) !important;
+}
+html:not(.dark) .btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.60) !important;
+  color: rgba(9, 9, 11, 0.78) !important;
+}
+/* Sidebar nav inactive items — boost legibility */
+html:not(.dark) aside nav a {
+  color: rgba(9, 9, 11, 0.60);
+}
+html:not(.dark) aside nav a:hover {
+  color: rgba(9, 9, 11, 0.85);
+}
+
+/* ── Background overrides — use white surfaces so cards "lift" above the gray bg ── */
+html:not(.dark) [class~="bg-white/[0.02]"]  { background-color: rgba(255,255,255,0.55) !important; }
+html:not(.dark) [class~="bg-white/[0.03]"]  { background-color: rgba(255,255,255,0.65) !important; }
+html:not(.dark) [class~="bg-white/[0.04]"]  { background-color: rgba(255,255,255,0.72) !important; }
+html:not(.dark) [class~="bg-white/[0.05]"]  { background-color: rgba(255,255,255,0.78) !important; }
+html:not(.dark) [class~="bg-white/[0.06]"]  { background-color: rgba(255,255,255,0.82) !important; }
+html:not(.dark) [class~="bg-white/[0.07]"]  { background-color: rgba(255,255,255,0.86) !important; }
+html:not(.dark) [class~="bg-white/[0.08]"]  { background-color: rgba(255,255,255,0.88) !important; }
+html:not(.dark) [class~="bg-white/[0.09]"]  { background-color: rgba(255,255,255,0.90) !important; }
+html:not(.dark) [class~="bg-white/[0.10]"]  { background-color: rgba(255,255,255,0.92) !important; }
+html:not(.dark) [class~="bg-white/[0.12]"]  { background-color: rgba(255,255,255,0.94) !important; }
+html:not(.dark) [class~="bg-white/[0.14]"]  { background-color: rgba(255,255,255,0.96) !important; }
+
+/* ── Background overrides — hardcoded dark hex ── */
+html:not(.dark) [class~="bg-[#090909]"]  { background-color: rgb(var(--ui-bg)) !important; }
+html:not(.dark) [class~="bg-[#0c0c0c]"]  { background-color: rgb(var(--ui-bg)) !important; }
+html:not(.dark) [class~="bg-[#0d0d0d]"]  { background-color: rgb(var(--ui-sidebar)) !important; }
+html:not(.dark) [class~="bg-[#111111]"]  { background-color: rgb(var(--ui-surface)) !important; }
+html:not(.dark) [class~="bg-[#141414]"]  { background-color: rgb(var(--ui-surface)) !important; }
+html:not(.dark) [class~="bg-[#1a1a1a]"]  { background-color: #f0f0f2 !important; }
+html:not(.dark) [class~="bg-[#050505]"]  { background-color: #e8e8ea !important; }
+
+/* ── Border overrides — boosted for contrast on gray bg ── */
+html:not(.dark) [class~="border-white/[0.04]"]  { border-color: rgba(0,0,0,0.09) !important; }
+html:not(.dark) [class~="border-white/[0.05]"]  { border-color: rgba(0,0,0,0.10) !important; }
+html:not(.dark) [class~="border-white/[0.06]"]  { border-color: rgba(0,0,0,0.11) !important; }
+html:not(.dark) [class~="border-white/[0.07]"]  { border-color: rgba(0,0,0,0.12) !important; }
+html:not(.dark) [class~="border-white/[0.08]"]  { border-color: rgba(0,0,0,0.13) !important; }
+html:not(.dark) [class~="border-white/[0.09]"]  { border-color: rgba(0,0,0,0.14) !important; }
+html:not(.dark) [class~="border-white/[0.10]"]  { border-color: rgba(0,0,0,0.15) !important; }
+html:not(.dark) [class~="border-white/[0.12]"]  { border-color: rgba(0,0,0,0.17) !important; }
+html:not(.dark) [class~="border-white/[0.13]"]  { border-color: rgba(0,0,0,0.18) !important; }
+html:not(.dark) [class~="border-white/[0.15]"]  { border-color: rgba(0,0,0,0.20) !important; }
+html:not(.dark) [class~="border-white/30"]       { border-color: rgba(0,0,0,0.35) !important; }
+html:not(.dark) [class~="border-white/20"]       { border-color: rgba(0,0,0,0.28) !important; }
+
+/* ── Hover bg overrides — white lift on gray bg ── */
+html:not(.dark) [class~="hover:bg-white/[0.02]"]:hover { background-color: rgba(255,255,255,0.50) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.03]"]:hover { background-color: rgba(255,255,255,0.60) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.04]"]:hover { background-color: rgba(255,255,255,0.68) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.05]"]:hover { background-color: rgba(255,255,255,0.74) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.06]"]:hover { background-color: rgba(255,255,255,0.80) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.08]"]:hover { background-color: rgba(255,255,255,0.85) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.09]"]:hover { background-color: rgba(255,255,255,0.88) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.10]"]:hover { background-color: rgba(255,255,255,0.90) !important; }
+html:not(.dark) [class~="hover:bg-white/[0.14]"]:hover { background-color: rgba(255,255,255,0.93) !important; }
+
+/* ── Divide overrides ── */
+html:not(.dark) [class~="divide-white/[0.04]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.04) !important; }
+html:not(.dark) [class~="divide-white/[0.05]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.05) !important; }
+html:not(.dark) [class~="divide-white/[0.06]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.06) !important; }
+
+/* ── Sidebar border override ── */
+html:not(.dark) aside {
+  border-right-color: rgba(0,0,0,0.08) !important;
+}
+
+/* ── Login/auth pages: keep dark even in light mode ── */
+html:not(.dark) .login-page,
+html:not(.dark) .signin-page {
+  background-color: #050505;
+}
+
+/* ── Grade badge in light mode ── */
+html:not(.dark) .grade-badge-empty {
+  background-color: rgba(0,0,0,0.04);
+  color: rgba(0,0,0,0.25);
+  border-color: rgba(0,0,0,0.06);
+}
+
+/* ── Native selects in light mode ── */
+html:not(.dark) select option {
+  background-color: #ffffff;
+  color: #09090b;
+}
+
+/* ── Scrollbar ── */
+html:not(.dark) ::-webkit-scrollbar-track { background: transparent; }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 10px; }
+html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
+/* ════════════════════════════════════════
+   DARK MODE STYLES (default)
+════════════════════════════════════════ */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px rgb(var(--cp-400) / 0.35), 0 0 0 4px rgb(var(--cp-400) / 0.10);
 }
 
-/* Login title text */
 .holo-text {
   color: #ffffff;
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+  text-shadow:
+    0 0 40px rgba(255, 255, 255, 0.25),
+    0 0 100px rgba(255, 255, 255, 0.08);
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0c0c0c;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }

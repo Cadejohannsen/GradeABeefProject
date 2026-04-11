@@ -6,7 +6,7 @@ import {
   type CreatePlayer, type CreateGame, type CreateSeason,
 } from "@/lib/json-db";
 
-const MODEL = "google/gemma-3-27b-it:free";
+const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 function buildContext(coachId: string, year: string) {
