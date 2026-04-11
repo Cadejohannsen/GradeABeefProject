@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/settings-provider";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/dashboard/runs", label: "Runs", icon: Zap },
   { href: "/dashboard/pass", label: "Pass", icon: Shield },
   { href: "/dashboard/draws-screens", label: "Draw/Screen", icon: Shuffle },
+  { href: "/dashboard/ai", label: "AI", icon: Sparkles },
 ];
 
 export function Sidebar() {
