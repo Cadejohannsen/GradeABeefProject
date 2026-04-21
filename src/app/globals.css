@@ -3,21 +3,22 @@
 @tailwind utilities;
 
 /* ══════════════════════════════════════════
-   PRIMARY COLOR PALETTE — dynamic via JS
+   PRIMARY COLOR PALETTE — F1 Red
    Format: space-separated RGB channels
 ══════════════════════════════════════════ */
 :root {
-  --cp-50:  232 221 242;
-  --cp-100: 197 179 219;
-  --cp-200: 155 126 196;
-  --cp-300: 123  93 170;
-  --cp-400:  92  61 143;
-  --cp-500:  45  27  78;
-  --cp-600:  37  23  69;
-  --cp-700:  30  18  58;
-  --cp-800:  22  13  46;
-  --cp-900:  15  10  32;
+  --cp-50:  255 228 225;
+  --cp-100: 255 196 190;
+  --cp-200: 255 154 147;
+  --cp-300: 255 100  93;
+  --cp-400: 240  50  35;
+  --cp-500: 225   6   0;
+  --cp-600: 185   5   0;
+  --cp-700: 145   3   0;
+  --cp-800:  90   2   0;
+  --cp-900:  50   1   0;
   --cp: var(--cp-500);
+  --topnav-h: 72px;
 }
 
 /* ══════════════════════════════════════════
@@ -26,22 +27,22 @@
    Light mode overrides via html:not(.dark)
 ══════════════════════════════════════════ */
 :root {
-  --ui-bg:          9   9   9;    /* #090909 — main background */
-  --ui-surface:    17  17  17;    /* #111111 — elevated surfaces */
-  --ui-sidebar:    13  13  13;    /* #0d0d0d — sidebar */
-  --ui-fg:        240 240 240;    /* #f0f0f0 — primary text */
-  --ui-fg2:       136 136 136;    /* #888888 — secondary text */
+  --ui-bg:           6   6   6;    /* near-black main bg */
+  --ui-surface:     12  12  12;    /* elevated surfaces */
+  --ui-sidebar:      8   8   8;    /* topnav */
+  --ui-fg:         245 245 245;    /* primary text */
+  --ui-fg2:        140 140 140;    /* secondary text */
   /* Channels used with opacity (white in dark, black in light) */
   --ui-ch:     255 255 255;
 }
 
 html:not(.dark) {
-  --ui-bg:        228 228 233;   /* #e4e4e9 — soft blue-gray, not harsh white */
-  --ui-surface:   242 242 246;   /* #f2f2f6 — slightly lighter cards */
-  --ui-sidebar:   236 236 241;   /* #ececf1 — distinct sidebar */
-  --ui-fg:          9   9  11;   /* #09090b */
-  --ui-fg2:        60  60  70;   /* #3c3c46 — darker secondary text */
-  --ui-ch:       0   0   0;      /* flip to black */
+  --ui-bg:        228 228 233;   /* #e4e4e9 */
+  --ui-surface:   242 242 246;   /* #f2f2f6 */
+  --ui-sidebar:    15  15  15;   /* topnav stays dark in light mode */
+  --ui-fg:          9   9  11;
+  --ui-fg2:        60  60  70;
+  --ui-ch:       0   0   0;
 }
 
 @layer base {
@@ -92,51 +93,58 @@ html:not(.dark) {
 @layer components {
   /* ── Grade badges ── */
   .grade-badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono border;
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold font-mono border;
   }
   .grade-badge-good  { @apply grade-badge bg-emerald-500/10 text-emerald-400 border-emerald-500/15; }
   .grade-badge-mid   { @apply grade-badge bg-yellow-500/10 text-yellow-400 border-yellow-500/15; }
   .grade-badge-low   { @apply grade-badge bg-red-500/10 text-red-400 border-red-500/15; }
   .grade-badge-empty { @apply grade-badge bg-white/[0.04] text-white/25 border-white/[0.06]; }
 
-  /* ── Cards ── */
+  /* ── Cards — F1 style: sharp corners, red top accent on hover ── */
   .card {
     background-color: rgb(var(--ui-ch) / 0.03);
-    border: 1px solid rgb(var(--ui-ch) / 0.08);
-    border-radius: 0.75rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.09);
+    border-top: 2px solid rgb(var(--ui-ch) / 0.09);
+    border-radius: 0.375rem;
+    position: relative;
+    overflow: hidden;
   }
   .card-hover {
     background-color: rgb(var(--ui-ch) / 0.03);
-    border: 1px solid rgb(var(--ui-ch) / 0.08);
-    border-radius: 0.75rem;
-    transition: background-color 0.2s, border-color 0.2s;
+    border: 1px solid rgb(var(--ui-ch) / 0.09);
+    border-top: 2px solid rgb(var(--ui-ch) / 0.09);
+    border-radius: 0.375rem;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.18s, border-color 0.18s, border-top-color 0.18s;
   }
   .card-hover:hover {
     background-color: rgb(var(--ui-ch) / 0.05);
-    border-color: rgb(var(--cp-500) / 0.20);
+    border-color: rgb(var(--ui-ch) / 0.13);
+    border-top-color: rgb(var(--cp-500) / 0.90);
   }
   .card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgb(var(--ui-ch) / 0.06);
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid rgb(var(--ui-ch) / 0.07);
   }
 
   /* ── Icon blocks ── */
   .icon-block {
-    @apply w-7 h-7 rounded-lg bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
+    @apply w-7 h-7 rounded bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
   }
   .icon-block-lg {
-    @apply w-9 h-9 rounded-xl bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
+    @apply w-9 h-9 rounded-lg bg-primary-500/10 border border-primary-500/15 flex items-center justify-center flex-shrink-0;
   }
 
   /* ── Inputs ── */
   .input-field {
     width: 100%;
     background-color: rgb(var(--ui-ch) / 0.05);
-    border: 1px solid rgb(var(--ui-ch) / 0.08);
-    border-radius: 0.5rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.10);
+    border-radius: 0.375rem;
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: rgb(var(--ui-fg));
@@ -148,14 +156,14 @@ html:not(.dark) {
     color: rgb(var(--ui-ch) / 0.25);
   }
   .input-field:focus {
-    border-color: rgb(var(--cp-400) / 0.40);
-    box-shadow: 0 0 0 3px rgb(var(--cp-400) / 0.10);
+    border-color: rgb(var(--cp-500) / 0.50);
+    box-shadow: 0 0 0 3px rgb(var(--cp-500) / 0.10);
   }
   .select-field {
     width: 100%;
     background-color: rgb(var(--ui-ch) / 0.05);
-    border: 1px solid rgb(var(--ui-ch) / 0.08);
-    border-radius: 0.5rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.10);
+    border-radius: 0.375rem;
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: rgb(var(--ui-fg));
@@ -164,13 +172,19 @@ html:not(.dark) {
     outline: none;
   }
   .select-field:focus {
-    border-color: rgb(var(--cp-400) / 0.40);
-    box-shadow: 0 0 0 3px rgb(var(--cp-400) / 0.10);
+    border-color: rgb(var(--cp-500) / 0.50);
+    box-shadow: 0 0 0 3px rgb(var(--cp-500) / 0.10);
   }
 
-  /* ── Buttons ── */
+  /* ── Select / option contrast fix (dark mode default) ── */
+  select option {
+    background-color: #1a1a1a;
+    color: #f5f5f5;
+  }
+
+  /* ── Buttons — F1 style: sharp, bold ── */
   .btn-primary {
-    @apply flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed font-inter;
+    @apply flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-5 py-2.5 rounded transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed font-inter uppercase tracking-wide;
   }
   .btn-secondary {
     display: inline-flex;
@@ -179,17 +193,20 @@ html:not(.dark) {
     background-color: rgb(var(--ui-ch) / 0.06);
     color: rgb(var(--ui-fg) / 0.7);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     padding: 0.625rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgb(var(--ui-ch) / 0.08);
-    transition: background-color 0.15s, color 0.15s;
+    border-radius: 0.375rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.10);
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
     font-family: var(--font-inter), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     cursor: pointer;
   }
   .btn-secondary:hover {
     background-color: rgb(var(--ui-ch) / 0.10);
     color: rgb(var(--ui-fg));
+    border-color: rgb(var(--cp-500) / 0.35);
   }
   .btn-ghost {
     display: inline-flex;
@@ -199,7 +216,7 @@ html:not(.dark) {
     font-size: 0.875rem;
     font-weight: 500;
     padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     transition: background-color 0.15s, color 0.15s;
     font-family: var(--font-inter), sans-serif;
     cursor: pointer;
@@ -209,47 +226,57 @@ html:not(.dark) {
     color: rgb(var(--ui-fg) / 0.7);
   }
   .btn-danger {
-    @apply flex items-center gap-2 text-red-400/70 hover:text-red-400 text-sm font-medium px-3 py-2 rounded-lg hover:bg-red-500/[0.08] transition-colors duration-150 font-inter;
+    @apply flex items-center gap-2 text-red-400/70 hover:text-red-400 text-sm font-medium px-3 py-2 rounded hover:bg-red-500/[0.08] transition-colors duration-150 font-inter;
   }
 
-  /* ── Section label ── */
+  /* ── Section label — F1 style: bold uppercase ── */
   .section-label {
-    font-size: 0.625rem;
-    font-weight: 600;
+    font-size: 0.6rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: rgb(var(--ui-ch) / 0.25);
+    letter-spacing: 0.14em;
+    color: rgb(var(--ui-ch) / 0.30);
     font-family: var(--font-inter), sans-serif;
   }
 
-  /* ── Metric card ── */
+  /* ── Metric card — F1 style ── */
   .metric-card {
     background-color: rgb(var(--ui-ch) / 0.03);
-    border: 1px solid rgb(var(--ui-ch) / 0.07);
-    border-radius: 0.75rem;
+    border: 1px solid rgb(var(--ui-ch) / 0.09);
+    border-top: 2px solid rgb(var(--cp-500) / 0.70);
+    border-radius: 0.375rem;
     padding: 1.25rem;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition: background-color 0.18s, border-color 0.18s;
+    position: relative;
+    overflow: hidden;
   }
   .metric-card:hover {
-    background-color: rgb(var(--ui-ch) / 0.05);
-    border-color: rgb(var(--ui-ch) / 0.11);
+    background-color: rgb(var(--ui-ch) / 0.055);
+    border-color: rgb(var(--ui-ch) / 0.13);
+    border-top-color: rgb(var(--cp-500) / 1.0);
+  }
+  /* Subtle red glow in top-left corner of metric cards */
+  .metric-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 40px;
+    background: radial-gradient(ellipse at top left, rgb(var(--cp-500) / 0.10), transparent 70%);
+    pointer-events: none;
   }
 }
 
 /* ══════════════════════════════════════════
    LIGHT MODE — ADAPTIVE OVERRIDES
-   Invert white-based Tailwind utilities to
-   their dark-on-light equivalents.
 ══════════════════════════════════════════ */
 html:not(.dark) {
   color-scheme: light;
 }
 
-/* ── Text overrides ──
-   Light mode needs higher opacity than dark to maintain contrast.
-   Dark mode: white/40 = visible on near-black.
-   Light mode: black/40 on gray is nearly invisible — we boost each level. */
 html:not(.dark) [class~="text-white"]    { color: rgba(9, 9, 11, 1.00) !important; }
+.force-white { color: #ffffff !important; }
 html:not(.dark) [class~="text-white/90"] { color: rgba(9, 9, 11, 0.90) !important; }
 html:not(.dark) [class~="text-white/80"] { color: rgba(9, 9, 11, 0.82) !important; }
 html:not(.dark) [class~="text-white/75"] { color: rgba(9, 9, 11, 0.78) !important; }
@@ -266,44 +293,47 @@ html:not(.dark) [class~="text-white/20"] { color: rgba(9, 9, 11, 0.38) !importan
 html:not(.dark) [class~="text-white/15"] { color: rgba(9, 9, 11, 0.32) !important; }
 html:not(.dark) [class~="text-white/10"] { color: rgba(9, 9, 11, 0.25) !important; }
 
-/* ── Component class overrides for light mode ── */
-/* section-label uses a CSS var that needs a direct boost */
 html:not(.dark) .section-label {
   color: rgba(9, 9, 11, 0.52) !important;
   font-weight: 700 !important;
 }
-/* ── Cards: white surface lifted above gray background ── */
 html:not(.dark) .card,
 html:not(.dark) .card-hover {
   background-color: rgba(255, 255, 255, 0.82) !important;
   border-color: rgba(0, 0, 0, 0.10) !important;
+  border-top-color: rgba(0, 0, 0, 0.10) !important;
 }
 html:not(.dark) .card-hover:hover {
   background-color: rgba(255, 255, 255, 0.95) !important;
-  border-color: rgb(var(--cp-500) / 0.25) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-top-color: rgb(var(--cp-500) / 0.90) !important;
 }
 html:not(.dark) .metric-card {
   background-color: rgba(255, 255, 255, 0.75) !important;
   border-color: rgba(0, 0, 0, 0.10) !important;
+  border-top-color: rgb(var(--cp-500) / 0.70) !important;
 }
 html:not(.dark) .metric-card:hover {
   background-color: rgba(255, 255, 255, 0.92) !important;
   border-color: rgba(0, 0, 0, 0.14) !important;
+  border-top-color: rgb(var(--cp-500) / 1.0) !important;
 }
 html:not(.dark) .card-header {
   border-bottom-color: rgba(0, 0, 0, 0.09) !important;
 }
-/* Inputs: white on gray */
 html:not(.dark) .input-field,
 html:not(.dark) .select-field {
   background-color: rgba(255, 255, 255, 0.85) !important;
   border-color: rgba(0, 0, 0, 0.15) !important;
   color: rgba(9, 9, 11, 1.0) !important;
 }
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+}
 html:not(.dark) .input-field::placeholder {
   color: rgba(9, 9, 11, 0.38) !important;
 }
-/* btn-secondary in light mode */
 html:not(.dark) .btn-secondary {
   background-color: rgba(255, 255, 255, 0.70) !important;
   border-color: rgba(0, 0, 0, 0.13) !important;
@@ -320,15 +350,8 @@ html:not(.dark) .btn-ghost:hover {
   background-color: rgba(255, 255, 255, 0.60) !important;
   color: rgba(9, 9, 11, 0.78) !important;
 }
-/* Sidebar nav inactive items — boost legibility */
-html:not(.dark) aside nav a {
-  color: rgba(9, 9, 11, 0.60);
-}
-html:not(.dark) aside nav a:hover {
-  color: rgba(9, 9, 11, 0.85);
-}
 
-/* ── Background overrides — use white surfaces so cards "lift" above the gray bg ── */
+/* ── Background overrides ── */
 html:not(.dark) [class~="bg-white/[0.02]"]  { background-color: rgba(255,255,255,0.55) !important; }
 html:not(.dark) [class~="bg-white/[0.03]"]  { background-color: rgba(255,255,255,0.65) !important; }
 html:not(.dark) [class~="bg-white/[0.04]"]  { background-color: rgba(255,255,255,0.72) !important; }
@@ -341,7 +364,6 @@ html:not(.dark) [class~="bg-white/[0.10]"]  { background-color: rgba(255,255,255
 html:not(.dark) [class~="bg-white/[0.12]"]  { background-color: rgba(255,255,255,0.94) !important; }
 html:not(.dark) [class~="bg-white/[0.14]"]  { background-color: rgba(255,255,255,0.96) !important; }
 
-/* ── Background overrides — hardcoded dark hex ── */
 html:not(.dark) [class~="bg-[#090909]"]  { background-color: rgb(var(--ui-bg)) !important; }
 html:not(.dark) [class~="bg-[#0c0c0c]"]  { background-color: rgb(var(--ui-bg)) !important; }
 html:not(.dark) [class~="bg-[#0d0d0d]"]  { background-color: rgb(var(--ui-sidebar)) !important; }
@@ -350,7 +372,6 @@ html:not(.dark) [class~="bg-[#141414]"]  { background-color: rgb(var(--ui-surfac
 html:not(.dark) [class~="bg-[#1a1a1a]"]  { background-color: #f0f0f2 !important; }
 html:not(.dark) [class~="bg-[#050505]"]  { background-color: #e8e8ea !important; }
 
-/* ── Border overrides — boosted for contrast on gray bg ── */
 html:not(.dark) [class~="border-white/[0.04]"]  { border-color: rgba(0,0,0,0.09) !important; }
 html:not(.dark) [class~="border-white/[0.05]"]  { border-color: rgba(0,0,0,0.10) !important; }
 html:not(.dark) [class~="border-white/[0.06]"]  { border-color: rgba(0,0,0,0.11) !important; }
@@ -364,7 +385,6 @@ html:not(.dark) [class~="border-white/[0.15]"]  { border-color: rgba(0,0,0,0.20)
 html:not(.dark) [class~="border-white/30"]       { border-color: rgba(0,0,0,0.35) !important; }
 html:not(.dark) [class~="border-white/20"]       { border-color: rgba(0,0,0,0.28) !important; }
 
-/* ── Hover bg overrides — white lift on gray bg ── */
 html:not(.dark) [class~="hover:bg-white/[0.02]"]:hover { background-color: rgba(255,255,255,0.50) !important; }
 html:not(.dark) [class~="hover:bg-white/[0.03]"]:hover { background-color: rgba(255,255,255,0.60) !important; }
 html:not(.dark) [class~="hover:bg-white/[0.04]"]:hover { background-color: rgba(255,255,255,0.68) !important; }
@@ -375,15 +395,9 @@ html:not(.dark) [class~="hover:bg-white/[0.09]"]:hover { background-color: rgba(
 html:not(.dark) [class~="hover:bg-white/[0.10]"]:hover { background-color: rgba(255,255,255,0.90) !important; }
 html:not(.dark) [class~="hover:bg-white/[0.14]"]:hover { background-color: rgba(255,255,255,0.93) !important; }
 
-/* ── Divide overrides ── */
 html:not(.dark) [class~="divide-white/[0.04]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.04) !important; }
 html:not(.dark) [class~="divide-white/[0.05]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.05) !important; }
 html:not(.dark) [class~="divide-white/[0.06]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.06) !important; }
-
-/* ── Sidebar border override ── */
-html:not(.dark) aside {
-  border-right-color: rgba(0,0,0,0.08) !important;
-}
 
 /* ── Login/auth pages: keep dark even in light mode ── */
 html:not(.dark) .login-page,
@@ -391,20 +405,17 @@ html:not(.dark) .signin-page {
   background-color: #050505;
 }
 
-/* ── Grade badge in light mode ── */
 html:not(.dark) .grade-badge-empty {
   background-color: rgba(0,0,0,0.04);
   color: rgba(0,0,0,0.25);
   border-color: rgba(0,0,0,0.06);
 }
 
-/* ── Native selects in light mode ── */
 html:not(.dark) select option {
   background-color: #ffffff;
   color: #09090b;
 }
 
-/* ── Scrollbar ── */
 html:not(.dark) ::-webkit-scrollbar-track { background: transparent; }
 html:not(.dark) ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 10px; }
 html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
@@ -414,7 +425,7 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); 
 ════════════════════════════════════════ */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(var(--cp-400) / 0.35), 0 0 0 4px rgb(var(--cp-400) / 0.10);
+  box-shadow: 0 0 0 2px rgb(var(--cp-500) / 0.45), 0 0 0 4px rgb(var(--cp-500) / 0.12);
 }
 
 .holo-text {
@@ -428,3 +439,36 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); 
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* ── F1-style red divider utility ── */
+.f1-divider {
+  height: 2px;
+  background: linear-gradient(90deg, rgb(var(--cp-500)), rgb(var(--cp-400) / 0.4), transparent);
+}
+
+/* ── Topnav nav-link styles ── */
+.topnav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.125rem;
+  height: 100%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-inter), sans-serif;
+  white-space: nowrap;
+  transition: color 0.15s;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+.topnav-link:hover {
+  color: rgb(var(--cp-300));
+}
+.topnav-link.active {
+  color: #ffffff;
+  border-bottom-color: rgb(var(--cp-500));
+}

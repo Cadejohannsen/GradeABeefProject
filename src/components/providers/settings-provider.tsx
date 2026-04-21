@@ -18,7 +18,7 @@ interface SettingsContextType {
 
 const DEFAULT_SETTINGS: BrandSettings = {
   teamName: "",
-  primaryColor: "#2D1B4E",
+  primaryColor: "#E10600",
   logoDataUrl: null,
   lightMode: false,
 };

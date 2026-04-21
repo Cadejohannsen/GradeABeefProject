@@ -129,6 +129,9 @@ export default function GradesPage() {
   const [newPlayType, setNewPlayType] = useState("run");
   const newPlayRef = useRef<HTMLInputElement>(null);
 
+  // Performance by Play filter
+  const [playFilter, setPlayFilter] = useState("ALL");
+
   // Inline editing
   const [editingCell, setEditingCell] = useState<string | null>(null); // "snapId-playerId"
 
@@ -408,6 +411,35 @@ export default function GradesPage() {
   function getPlayerStats(playerId: string): GamePlayerStatsData | undefined {
     return gameData?.playerStats.find((s) => s.playerId === playerId);
   }
+
+  /* ── per-play calculations ── */
+  function calcStatsForPlay(playerId: string, playName: string) {
+    if (!gameData) return { snaps: 0, jobPct: 0, techPct: 0, totalPct: 0 };
+    const grades = gameData.snaps
+      .filter((s) => s.playName === playName)
+      .flatMap((s) => s.grades)
+      .filter((g) => g.playerId === playerId);
+    const total = grades.length;
+    if (total === 0) return { snaps: 0, jobPct: 0, techPct: 0, totalPct: 0 };
+    const jobCount = grades.filter((g) => isJobPositive(g.value)).length;
+    const techCount = grades.filter((g) => isTechPositive(g.value)).length;
+    return {
+      snaps: total,
+      jobPct: Math.round((jobCount / total) * 100),
+      techPct: Math.round((techCount / total) * 100),
+      totalPct: Math.round(((jobCount + techCount) / (total * 2)) * 100),
+    };
+  }
+
+  // Unique play names from current game, preserving snap order
+  const uniquePlayNames: { name: string; type: string }[] = gameData
+    ? Array.from(
+        gameData.snaps.reduce((map, s) => {
+          if (!map.has(s.playName)) map.set(s.playName, s.playType);
+          return map;
+        }, new Map<string, string>())
+      ).map(([name, type]) => ({ name, type }))
+    : [];
 
   /* ── no players state ── */
   if (players.length === 0) {
@@ -960,6 +992,95 @@ export default function GradesPage() {
               </tbody>
             </table>
           </div>
+
+          {/* ── Performance by Play ── */}
+          {uniquePlayNames.length > 0 && (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-md overflow-x-auto mb-6">
+              <div className="px-4 py-3 border-b border-white/[0.08] flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white">PERFORMANCE BY PLAY</h3>
+                  <p className="text-xs text-white/30 mt-0.5">Final % per player broken down by play name</p>
+                </div>
+                <div className="flex gap-1">
+                  {["ALL", "RUN", "PASS", "DRAW-SCREEN"].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setPlayFilter(f)}
+                      className={`text-[10px] font-semibold px-2.5 py-1 rounded border transition-colors font-inter ${
+                        playFilter === f
+                          ? "text-white border-white/20 bg-white/[0.10]"
+                          : "text-white/35 border-white/[0.08] bg-white/[0.02] hover:text-white/60"
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.08] bg-white/[0.02]">
+                    <th className="text-left px-4 py-2 text-xs text-white/40 font-medium min-w-[140px]">PLAY</th>
+                    <th className="text-left px-3 py-2 text-xs text-white/40 font-medium w-[80px]">TYPE</th>
+                    <th className="text-center px-3 py-2 text-xs text-white/40 font-medium w-[50px]">SNAPS</th>
+                    {activePlayers.map((p) => (
+                      <th key={p.id} className="text-center px-2 py-2 text-xs font-bold text-white min-w-[72px]">
+                        #{p.number}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {uniquePlayNames
+                    .filter((p) => playFilter === "ALL" || p.type.toUpperCase() === playFilter)
+                    .map(({ name, type }, idx) => {
+                      const totalSnaps = gameData!.snaps.filter((s) => s.playName === name).length;
+                      return (
+                        <tr
+                          key={name}
+                          className={`border-b border-white/[0.05] ${idx % 2 === 1 ? "bg-white/[0.01]" : ""}`}
+                        >
+                          <td className="px-4 py-2 font-bold text-white text-xs tracking-wide">{name}</td>
+                          <td className="px-3 py-2">
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                              type === "run"
+                                ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
+                                : type === "pass"
+                                ? "bg-purple-500/15 text-purple-400 border-purple-500/25"
+                                : "bg-orange-500/15 text-orange-400 border-orange-500/25"
+                            }`}>
+                              {type.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-center text-xs text-white/40">{totalSnaps}</td>
+                          {activePlayers.map((p) => {
+                            const st = calcStatsForPlay(p.id, name);
+                            if (st.snaps === 0) {
+                              return (
+                                <td key={p.id} className="text-center px-2 py-2 text-xs text-white/20">—</td>
+                              );
+                            }
+                            return (
+                              <td key={p.id} className="text-center px-2 py-2">
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <span className={`text-xs font-bold ${
+                                    st.totalPct >= 80 ? "text-green-400" :
+                                    st.totalPct >= 60 ? "text-yellow-400" : "text-red-500"
+                                  }`}>
+                                    {st.totalPct}%
+                                  </span>
+                                  <span className="text-[9px] text-white/25">{st.snaps} snp</span>
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
 

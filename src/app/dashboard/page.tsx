@@ -313,8 +313,8 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-7 py-7 pt-16">
-                <h1 className="text-5xl font-bold text-white drop-shadow">{year} Season</h1>
-                <p className="text-white/55 mt-1.5 text-[13px] font-inter">
+                <h1 className="text-6xl font-bold force-white" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,1)" }}>{year} Season</h1>
+                <p className="mt-1.5 text-[13px] font-inter force-white" style={{ opacity: 0.65 }}>
                   Welcome back, Coach — here&apos;s your season overview.
                 </p>
               </div>

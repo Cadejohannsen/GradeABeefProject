@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/layout/sidebar";
+import { TopNav } from "@/components/layout/topnav";
 
 export default function DashboardLayout({
   children,
@@ -7,8 +7,14 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
-      <main className="ml-[240px] p-8 max-w-[1400px]">{children}</main>
+      <TopNav />
+      {/* Push content below fixed topnav (--topnav-h = 58px) */}
+      <main
+        className="mx-auto px-8 py-8"
+        style={{ paddingTop: "calc(var(--topnav-h) + 2rem)", maxWidth: "1400px" }}
+      >
+        {children}
+      </main>
     </div>
   );
 }
