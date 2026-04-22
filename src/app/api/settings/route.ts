@@ -11,17 +11,19 @@ export async function GET() {
     teamName: coach.teamName ?? "",
     primaryColor: coach.primaryColor ?? "#2D1B4E",
     logoDataUrl: coach.logoDataUrl ?? null,
+    videoUrls: coach.videoUrls ?? {},
   });
 }
 
 export async function PUT(req: Request) {
   const coachId = await getCoachId();
-  const { teamName, primaryColor, logoDataUrl } = await req.json();
+  const { teamName, primaryColor, logoDataUrl, videoUrls } = await req.json();
 
   const updated = update<Coach>("coaches", coachId, {
     teamName,
     primaryColor,
     logoDataUrl,
+    videoUrls,
     updatedAt: new Date().toISOString(),
   });
 

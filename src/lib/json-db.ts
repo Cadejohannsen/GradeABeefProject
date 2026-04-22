@@ -12,6 +12,12 @@ export interface Coach {
   teamName: string;
   primaryColor?: string;
   logoDataUrl?: string;
+  videoUrls?: {
+    login?: string;
+    selectYear?: string;
+    signin?: string;
+    register?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

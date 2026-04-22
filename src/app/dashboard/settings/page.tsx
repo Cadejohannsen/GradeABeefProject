@@ -6,8 +6,14 @@ import { generatePalette } from "@/lib/color-palette";
 import { removeBackground } from "@/lib/remove-bg";
 import {
   Upload, X, Check, RotateCcw, Palette, Image as ImageIcon, Tag,
-  Eraser, Sliders, Undo2, Loader2, Sun, Moon,
+  Eraser, Sliders, Undo2, Loader2, Sun, Moon, Youtube,
 } from "lucide-react";
+import type { VideoUrls } from "@/components/providers/settings-provider";
+
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
 
 const DEFAULT_COLOR = "#2D1B4E";
 
@@ -49,6 +55,7 @@ export default function SettingsPage() {
   const [teamName, setTeamName]       = useState("");
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+  const [videoUrls, setVideoUrls] = useState<VideoUrls>({});
 
   // Remove-bg state
   const [originalLogo, setOriginalLogo] = useState<string | null>(null); // pre-removal copy
@@ -67,6 +74,7 @@ export default function SettingsPage() {
       setTeamName(settings.teamName ?? "");
       setPrimaryColor(settings.primaryColor ?? DEFAULT_COLOR);
       setLogoDataUrl(settings.logoDataUrl ?? null);
+      setVideoUrls(settings.videoUrls ?? {});
       setBgRemoved(false);
       setOriginalLogo(null);
     }
@@ -121,7 +129,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await updateSettings({ teamName, primaryColor, logoDataUrl });
+    await updateSettings({ teamName, primaryColor, logoDataUrl, videoUrls });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -131,6 +139,7 @@ export default function SettingsPage() {
     setPrimaryColor(DEFAULT_COLOR);
     setLogoDataUrl(settings.logoDataUrl ?? null);
     setTeamName(settings.teamName ?? "");
+    setVideoUrls(settings.videoUrls ?? {});
     setBgRemoved(false);
     setOriginalLogo(null);
   };
@@ -405,6 +414,51 @@ export default function SettingsPage() {
         <p className="text-white/30 text-xs">
           This color is used for buttons, active nav items, highlights, and accents across the app.
         </p>
+      </section>
+
+      {/* ── Background Videos ─────────────────────────────── */}
+      <section className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Youtube size={16} className="text-white/50" />
+          <h2 className="text-base font-semibold text-white/80">Background Videos</h2>
+        </div>
+        <p className="text-white/30 text-xs">Paste a YouTube link for each page. Leave blank to keep the default.</p>
+
+        <div className="space-y-3">
+          {([
+            { key: "login",      label: "Main / Login Page" },
+            { key: "selectYear", label: "Select Season Page" },
+            { key: "signin",     label: "Sign In Page" },
+            { key: "register",   label: "Register Page" },
+          ] as { key: keyof VideoUrls; label: string }[]).map(({ key, label }) => {
+            const val = videoUrls[key] ?? "";
+            const id  = extractYouTubeId(val);
+            return (
+              <div key={key}>
+                <label className="block text-xs text-white/40 mb-1.5 font-semibold uppercase tracking-wider">{label}</label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={val}
+                    onChange={(e) => setVideoUrls({ ...videoUrls, [key]: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="input-field flex-1"
+                  />
+                  {id && (
+                    <span className="text-[10px] text-green-400 font-mono bg-green-500/10 border border-green-500/20 px-2 py-1 rounded whitespace-nowrap">
+                      ✓ {id}
+                    </span>
+                  )}
+                  {val && !id && (
+                    <span className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded whitespace-nowrap">
+                      Invalid URL
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ── Actions ───────────────────────────────────────── */}

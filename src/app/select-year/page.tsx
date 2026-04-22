@@ -1,15 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { VolumeControl } from "@/components/ui/volume-control";
+import { useSettings } from "@/components/providers/settings-provider";
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
 export default function SelectYearPage() {
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
+  const [uiHidden, setUiHidden] = useState(false);
   const router = useRouter();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { settings } = useSettings();
+
+  function getEmbedUrl() {
+    const raw = settings.videoUrls?.selectYear ?? "";
+    const match = raw.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    const id = match ? match[1] : "nnE3K1w6xYw";
+    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&vq=high1080&fs=0&enablejsapi=1`;
+  }
+
+  function handleVolume(vol: number) {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    if (vol === 0) {
+      iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "mute", args: [] }), "*");
+    } else {
+      iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "unMute", args: [] }), "*");
+      iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [vol] }), "*");
+    }
+  }
 
   const handleYearSelect = async () => {
     // Ensure season exists for selected year
@@ -33,7 +56,8 @@ export default function SelectYearPage() {
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <iframe
-          src="https://www.youtube.com/embed/nnE3K1w6xYw?autoplay=1&mute=1&loop=1&playlist=nnE3K1w6xYw&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&vq=high1080&fs=0"
+          ref={iframeRef}
+          src={getEmbedUrl()}
           style={{
             position: "absolute",
             top: "50%",
@@ -48,11 +72,11 @@ export default function SelectYearPage() {
           allowFullScreen
         />
         {/* Dark overlay for better text visibility */}
-        <div className="absolute inset-0 bg-black/50" />
+        {!uiHidden && <div className="absolute inset-0 bg-black/50" />}
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center w-screen h-screen px-4">
+      {!uiHidden && <div className="relative z-10 flex flex-col items-center justify-center w-screen h-screen px-4">
         <div className="bg-white/[0.1] backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-white/[0.2]">
           <h1 className="text-4xl font-bold text-white text-center mb-2">Select Season Year</h1>
           <p className="text-white/70 text-center mb-8">Choose the year you want to manage</p>
@@ -93,6 +117,18 @@ export default function SelectYearPage() {
             </p>
           </div>
         </div>
+      </div>}
+
+      {/* Bottom-left controls */}
+      <div className="absolute bottom-6 left-6 z-30 flex flex-row items-end gap-2">
+        <VolumeControl onVolumeChange={handleVolume} className="flex flex-col items-center gap-2" />
+        <button
+          onClick={() => setUiHidden((h) => !h)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-inter font-semibold transition-all duration-150 active:scale-[0.98] text-[11px]"
+          style={{ background: "#ffffff", color: "#000000", boxShadow: "0 0 40px rgba(255,255,255,0.08)" }}
+        >
+          {uiHidden ? "Show" : "Hide"}
+        </button>
       </div>
     </div>
   );

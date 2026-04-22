@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { VolumeControl } from "@/components/ui/volume-control";
+import { useSettings } from "@/components/providers/settings-provider";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +14,32 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uiHidden, setUiHidden] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const router = useRouter();
+  const { settings } = useSettings();
+
+  const customUrl = settings.videoUrls?.signin ?? "";
+  const ytMatch = customUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  const ytId = ytMatch ? ytMatch[1] : null;
+
+  function handleVolume(vol: number) {
+    if (ytId) {
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) return;
+      if (vol === 0) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "mute", args: [] }), "*");
+      } else {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "unMute", args: [] }), "*");
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [vol] }), "*");
+      }
+    } else {
+      if (!videoRef.current) return;
+      videoRef.current.muted = vol === 0;
+      videoRef.current.volume = vol / 100;
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,30 +63,36 @@ export default function SignInPage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden bg-[#050505]">
       {/* Video background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-30"
-      >
-        <source src="/signin-bg.mp4" type="video/mp4" />
-      </video>
+      {ytId ? (
+        <div className="absolute inset-0 overflow-hidden">
+          <iframe
+            ref={iframeRef}
+            src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
+            allow="autoplay; encrypted-media"
+            className="absolute pointer-events-none"
+            style={{ top:"50%",left:"50%",width:"177.78vh",height:"56.25vw",minWidth:"100%",minHeight:"100%",transform:"translate(-50%,-50%)",opacity:uiHidden?1:0.3,border:"none" }}
+          />
+        </div>
+      ) : (
+        <video ref={videoRef} autoPlay loop muted playsInline className={`absolute inset-0 w-full h-full object-cover ${uiHidden ? "" : "opacity-30"}`}>
+          <source src="/signin-bg.mp4" type="video/mp4" />
+        </video>
+      )}
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80" />
+      {!uiHidden && <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80" />}
 
       {/* Back button */}
-      <button
+      {!uiHidden && <button
         onClick={() => router.push("/login")}
         className="absolute top-6 left-6 z-20 flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors font-inter"
       >
         <ArrowLeft size={13} />
         Back
-      </button>
+      </button>}
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-[360px]">
+      {!uiHidden && <div className="relative z-10 w-full max-w-[360px]">
 
         {/* Wordmark */}
         <div className="text-center mb-7">
@@ -152,6 +185,18 @@ export default function SignInPage() {
             </button>
           </div>
         </div>
+      </div>}
+
+      {/* Bottom-left controls */}
+      <div className="absolute bottom-6 left-6 z-30 flex flex-row items-end gap-2">
+        <VolumeControl onVolumeChange={handleVolume} className="flex flex-col items-center gap-2" />
+        <button
+          onClick={() => setUiHidden((h) => !h)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-inter font-semibold transition-all duration-150 active:scale-[0.98] text-[11px]"
+          style={{ background: "#ffffff", color: "#000000", boxShadow: "0 0 40px rgba(255,255,255,0.08)" }}
+        >
+          {uiHidden ? "Show" : "Hide"}
+        </button>
       </div>
     </div>
   );
