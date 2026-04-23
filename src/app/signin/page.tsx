@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -46,17 +48,31 @@ export default function SignInPage() {
     setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
 
-    if (res?.error) {
-      setError("Invalid email or password. Please try again.");
+      const res = await signIn("credentials", {
+        idToken,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError("Account not found. Please register first.");
+        setLoading(false);
+      } else {
+        router.push("/select-year");
+      }
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
+        setError("Invalid email or password. Please try again.");
+      } else if (code === "auth/too-many-requests") {
+        setError("Too many attempts. Please wait a moment and try again.");
+      } else {
+        setError("Sign in failed. Please try again.");
+      }
       setLoading(false);
-    } else {
-      router.push("/select-year");
     }
   }
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -46,30 +48,46 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    let userCredential;
     try {
+      userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code === "auth/email-already-in-use") {
+        setError("An account with this email already exists.");
+      } else if (code === "auth/weak-password") {
+        setError("Password must be at least 6 characters.");
+      } else {
+        setError("Failed to create account. Please try again.");
+      }
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const idToken = await userCredential.user.getIdToken();
+
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, teamName }),
+        body: JSON.stringify({ name, email, teamName, idToken }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        // Roll back the Firebase user if our DB registration fails
+        await userCredential.user.delete();
         setError(data.error || "Registration failed");
         setLoading(false);
         return;
       }
 
-      await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
+      await signIn("credentials", { idToken, redirect: false });
       router.push("/dashboard");
     } catch {
-      setError("Something went wrong");
+      await userCredential.user.delete();
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
@@ -147,6 +165,7 @@ export default function RegisterPage() {
                 className="w-full bg-white/[0.08] border border-white/[0.12] rounded-sm px-4 py-2.5 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-transparent transition"
                 placeholder="••••••••"
                 required
+                minLength={6}
               />
             </div>
 

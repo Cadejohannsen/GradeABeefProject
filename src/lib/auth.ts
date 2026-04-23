@@ -1,35 +1,37 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { findUniqueByEmail, type Coach } from "@/lib/json-db";
+import { adminAuth } from "@/lib/firebase-admin";
+import { findUnique, findUniqueByEmail, type Coach } from "@/lib/json-db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: "Firebase",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        idToken: { label: "Firebase ID Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.idToken) return null;
 
-        const coach: Coach | null = findUniqueByEmail("coaches", credentials.email);
+        try {
+          const decoded = await adminAuth.verifyIdToken(credentials.idToken);
 
-        if (!coach) return null;
+          // Look up coach by Firebase UID first, then fall back to email
+          let coach: Coach | null = findUnique<Coach>("coaches", decoded.uid);
+          if (!coach && decoded.email) {
+            coach = findUniqueByEmail<Coach>("coaches", decoded.email);
+          }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          coach.passwordHash
-        );
+          if (!coach) return null;
 
-        if (!isValid) return null;
-
-        return {
-          id: coach.id,
-          email: coach.email,
-          name: coach.name,
-        };
+          return {
+            id: coach.id,
+            email: coach.email,
+            name: coach.name,
+          };
+        } catch {
+          return null;
+        }
       },
     }),
   ],
