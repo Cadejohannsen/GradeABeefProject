@@ -87,8 +87,8 @@ export default function LoginPage() {
               alt={settings.teamName || "Team Logo"}
               className="relative"
               style={{
-                maxWidth: "min(480px, 70vw)",
-                maxHeight: "480px",
+                maxWidth: "min(180px, 35vw)",
+                maxHeight: "180px",
                 width: "auto",
                 height: "auto",
                 objectFit: "contain",

@@ -1,7 +1,12 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
-if (!getApps().length) {
+const hasAdminCreds =
+  process.env.FIREBASE_ADMIN_PROJECT_ID &&
+  process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
+  process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+
+if (hasAdminCreds && !getApps().length) {
   initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
@@ -11,4 +16,4 @@ if (!getApps().length) {
   });
 }
 
-export const adminAuth = getAuth();
+export const adminAuth = hasAdminCreds ? getAuth() : null;

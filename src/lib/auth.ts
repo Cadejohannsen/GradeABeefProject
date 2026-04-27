@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.idToken) return null;
+        if (!adminAuth) return null;
 
         try {
           const decoded = await adminAuth.verifyIdToken(credentials.idToken);

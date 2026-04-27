@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { findFirst, create, cuid, now, type Season, type CreateSeason } from "@/lib/json-db";
 import { getCoachId } from "@/lib/dev-auth";
 
 export async function POST(request: Request) {
@@ -10,22 +10,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Year is required" }, { status: 400 });
   }
 
-  // Check if season already exists
-  let season = await prisma.season.findFirst({
-    where: {
-      coachId,
-      name: year,
-    },
-  });
+  // Return existing season if it already exists
+  let season = findFirst<Season>("seasons", { coachId, name: year });
 
-  // Create season if it doesn't exist
   if (!season) {
-    season = await prisma.season.create({
-      data: {
-        name: year,
-        coachId,
-      },
-    });
+    season = create<CreateSeason>("seasons", {
+      id: cuid(),
+      name: year,
+      coachId,
+      createdAt: now(),
+    }) as Season;
   }
 
   return NextResponse.json({ season });

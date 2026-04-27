@@ -109,14 +109,14 @@ export function TopNav() {
         }}
       >
         {/* ── Brand (left) ── */}
-        <div className="relative flex items-center pr-6 border-r border-white/[0.07] mr-4 flex-shrink-0" style={{ paddingLeft: "98px" }}>
+        <div className="relative flex items-center pr-6 border-r border-white/[0.07] mr-4 flex-shrink-0" style={{ paddingLeft: "52px" }}>
           {/* Logo — absolutely positioned so it never shifts the text */}
           {settings.logoDataUrl ? (
             <img
               src={settings.logoDataUrl}
               alt="Team logo"
               className="absolute object-contain"
-              style={{ left: 0, top: "50%", transform: "translateY(-50%)", width: "90px", height: "90px" }}
+              style={{ left: 0, top: "50%", transform: "translateY(-50%)", width: "44px", height: "44px" }}
             />
           ) : (
             <div
